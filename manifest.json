@@ -1,0 +1,10 @@
+{
+	"id": "new-tab-search",
+	"name": "New Tab Search",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "A new tab page with instant search and bookmarks.",
+	"author": "kuoe0",
+	"authorUrl": "https://github.com/kuoe0/obsidian-new-tab-search",
+	"isDesktopOnly": false
+}

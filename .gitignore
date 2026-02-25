@@ -10,8 +10,3 @@ npm-debug.log*
 
 # Obsidian
 .obsidian/
-
-# Build artifacts
-main.js
-manifest.json
-styles.css
