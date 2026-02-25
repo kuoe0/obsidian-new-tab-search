@@ -1,10 +1,11 @@
 import * as React from "react";
-import { App, TFile } from "obsidian";
+import { App, TFile, WorkspaceLeaf } from "obsidian";
 import fuzzysort from "fuzzysort";
 import { getIconForFile, renderIcon } from "./iconUtils";
 
 interface NewTabComponentProps {
   app: App;
+  leaf: WorkspaceLeaf;
 }
 
 interface SearchResult {
@@ -39,7 +40,7 @@ const IconDisplay: React.FC<{ app: App, iconName?: string, color?: string | null
   return <span ref={ref} className={`icon-render ${className || ''}`} />;
 };
 
-export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
+export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) => {
   const [greeting, setGreeting] = React.useState("");
 
   // Set greeting based on time
@@ -70,41 +71,41 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
           const instance = bookmarksPlugin.instance;
           const items = instance.items || (instance.getBookmarks ? instance.getBookmarks() : []);
 
-            const flatBookmarks: BookmarkItem[] = [];
+          const flatBookmarks: BookmarkItem[] = [];
 
-            const traverse = (items: BookmarkItem[]) => {
-              for (const item of items) {
-                if (item.type === 'file') {
-                  flatBookmarks.push(item);
-                } else if (item.type === 'group' && item.items) {
-                  traverse(item.items);
-                }
+          const traverse = (items: BookmarkItem[]) => {
+            for (const item of items) {
+              if (item.type === 'file') {
+                flatBookmarks.push(item);
+              } else if (item.type === 'group' && item.items) {
+                traverse(item.items);
               }
-            };
-
-            if (Array.isArray(items)) {
-              traverse(items);
             }
+          };
 
-            // Enrich with icons
-            const enriched = await Promise.all(flatBookmarks.slice(0, 10).map(async (b) => {
-              let icon = "lucide-file";
-              let color: string | null = null;
-              if (b.type === 'file' && b.path) {
-                const file = app.vault.getAbstractFileByPath(b.path);
-                if (file instanceof TFile) {
-                  const iconInfo = await getIconForFile(app, file);
-                  icon = iconInfo.icon;
-                  color = iconInfo.color;
-                }
-              }
-              return { ...b, icon, color };
-            }));
-            setBookmarks(enriched);
+          if (Array.isArray(items)) {
+            traverse(items);
           }
-        } catch (e) {
-          console.error("Failed to fetch bookmarks", e);
+
+          // Enrich with icons
+          const enriched = await Promise.all(flatBookmarks.slice(0, 10).map(async (b) => {
+            let icon = "lucide-file";
+            let color: string | null = null;
+            if (b.type === 'file' && b.path) {
+              const file = app.vault.getAbstractFileByPath(b.path);
+              if (file instanceof TFile) {
+                const iconInfo = await getIconForFile(app, file);
+                icon = iconInfo.icon;
+                color = iconInfo.color;
+              }
+            }
+            return { ...b, icon, color };
+          }));
+          setBookmarks(enriched);
         }
+      } catch (e) {
+        console.error("Failed to fetch bookmarks", e);
+      }
     };
     fetchBookmarks();
   }, [app]);
@@ -147,7 +148,13 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
   }, [query, app.vault]);
 
   const openFile = (file: TFile) => {
-    app.workspace.getLeaf(false).openFile(file);
+    // Open in this exact leaf (replacing the new tab page)
+    if (leaf) {
+      leaf.openFile(file);
+    } else {
+      // Fallback if leaf is missing for some reason
+      app.workspace.getLeaf(false).openFile(file);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -165,6 +172,35 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
     }
   };
 
+  const handleDailyNote = () => {
+    const commands = (app as any).commands;
+    // Try reliable commands in order
+    const commandIds = [
+      "daily-notes",           // Internal core command ID (often)
+      "daily-notes:today",     // Common alias or explicit ID
+      "periodic-notes:open-daily-note", // Periodic notes plugin
+      "periodic-notes:today"   // Another potential ID
+    ];
+
+    let executed = false;
+    for (const id of commandIds) {
+      if (commands.findCommand(id)) {
+        commands.executeCommandById(id);
+        executed = true;
+        break;
+      }
+    }
+
+    if (!executed) {
+      // Last resort: check if core plugin is enabled but maybe command is hidden?
+      const dailyNotesPlugin = (app as any).internalPlugins?.getPluginById("daily-notes");
+      if (dailyNotesPlugin && !dailyNotesPlugin.enabled) {
+        // Maybe notify user? For now just try the ID anyway.
+        console.warn("Daily Notes plugin might be disabled.");
+      }
+    }
+  };
+
   return (
     <div className="new-tab-wrapper">
       <div className="greeting-section">
@@ -176,10 +212,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
           <div className="daily-note-section">
             <button
               className="daily-note-widget"
-              onClick={() => {
-                const dailyNotesPlugin = (app as any).internalPlugins?.getPluginById("daily-notes");
-                (app as any).commands.executeCommandById("daily-notes:today");
-              }}
+              onClick={handleDailyNote}
             >
               <div className="daily-note-icon-container">
                 <IconDisplay app={app} iconName="calendar" className="daily-note-icon" />
@@ -221,7 +254,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
               <div className="search-icon-indicator">
                 {query ? <IconDisplay app={app} iconName="corner-down-left" /> : <IconDisplay app={app} iconName="search" />}
               </div>
-          </div>
+            </div>
           </div>
         </div>
 

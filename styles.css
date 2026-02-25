@@ -485,6 +485,17 @@
 
 /* Mobile Focus Mode: Hide greeting/widgets when typing to see results */
 @media screen and (max-width: 768px) {
+    /* Adjust container to handle safe area */
+        .new-tab-wrapper {
+            padding-top: max(2rem, env(safe-area-inset-top));
+            /* Ensure basic gap */
+        }
+    
+        /* Keep greeting visible but maybe smaller? 
+               Actually user complained it "disappeared", so let's try not to hide it completely 
+               unless completely necessary, or just fix the spacing when hidden. 
+               Let's stick to the hidden on focus for now but fix the spacing (user said "AND too close"). 
+               So when hidden, search bar shouldn't hit the top. */
 
     .new-tab-wrapper:focus-within .greeting-section,
     .new-tab-wrapper:focus-within .daily-note-section {
@@ -492,8 +503,8 @@
     }
 
     .new-tab-wrapper:focus-within {
-        padding-top: 1rem;
-        /* Less padding when focused to maximize space */
+        /* When focused, add significantly more padding to avoid top edge */
+            padding-top: max(15vh, env(safe-area-inset-top));
         justify-content: flex-start;
     }
 }
@@ -530,8 +541,8 @@
 /* Search Results Specifics */
 .search-results {
     background-color: var(--background-primary);
-    border-radius: 0 0 24px 24px;
-        /* Match input curvature */
+    border-radius: 0 0 12px 12px;
+        /* Tighter radius as requested */
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--background-modifier-border);
     border-top: none;

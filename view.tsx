@@ -29,7 +29,7 @@ export class NewTabView extends ItemView {
     this.root = ReactDOM.createRoot(container);
     this.root.render(
       <React.StrictMode>
-        <NewTabComponent app={this.app} />
+        <NewTabComponent app={this.app} leaf={this.leaf} />
       </React.StrictMode>
     );
   }
