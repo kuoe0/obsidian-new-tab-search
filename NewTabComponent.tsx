@@ -11,6 +11,7 @@ interface SearchResult {
   file: TFile;
   score: number;
   icon?: string;
+  color?: string | null;
 }
 
 interface BookmarkItem {
@@ -20,17 +21,18 @@ interface BookmarkItem {
   items?: BookmarkItem[];
   url?: string;
   icon?: string;
+  color?: string | null;
 }
 
-const IconDisplay: React.FC<{ app: App, iconName?: string, className?: string }> = ({ app, iconName, className }) => {
+const IconDisplay: React.FC<{ app: App, iconName?: string, color?: string | null, className?: string }> = ({ app, iconName, color, className }) => {
   const ref = React.useRef<HTMLSpanElement>(null);
 
   React.useEffect(() => {
     if (ref.current && iconName) {
       ref.current.empty();
-      renderIcon(app, iconName, ref.current);
+      renderIcon(app, iconName, ref.current, color);
     }
-  }, [iconName, app]);
+  }, [iconName, color, app]);
 
   if (!iconName) return <span className={`icon-placeholder ${className || ''}`}>📄</span>;
 
@@ -77,13 +79,16 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
             // Enrich with icons
             const enriched = await Promise.all(flatBookmarks.slice(0, 10).map(async (b) => {
               let icon = "lucide-file";
+              let color: string | null = null;
               if (b.type === 'file' && b.path) {
                 const file = app.vault.getAbstractFileByPath(b.path);
                 if (file instanceof TFile) {
-                  icon = await getIconForFile(app, file);
+                  const iconInfo = await getIconForFile(app, file);
+                  icon = iconInfo.icon;
+                  color = iconInfo.color;
                 }
               }
-              return { ...b, icon };
+              return { ...b, icon, color };
             }));
             setBookmarks(enriched);
           }
@@ -115,11 +120,15 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
     });
 
     const processResults = async () => {
-      const mapped = await Promise.all(results.map(async r => ({
-        file: r.obj.file,
-        score: r.score,
-        icon: await getIconForFile(app, r.obj.file)
-      })));
+      const mapped = await Promise.all(results.map(async r => {
+        const iconInfo = await getIconForFile(app, r.obj.file);
+        return {
+          file: r.obj.file,
+          score: r.score,
+          icon: iconInfo.icon,
+          color: iconInfo.color
+        };
+      }));
       setResults(mapped);
       setSelectedIndex(0);
     };
@@ -171,7 +180,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
               onClick={() => openFile(result.file)}
               onMouseEnter={() => setSelectedIndex(index)}
             >
-              <IconDisplay app={app} iconName={result.icon} className="result-icon-el" />
+              <IconDisplay app={app} iconName={result.icon} color={result.color} className="result-icon-el" />
               <div className="result-info">
                 <span className="result-name">{result.file.basename}</span>
                 <span className="result-path">{result.file.parent?.path}</span>
@@ -197,7 +206,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
                     }}
                   >
                     <div className="bookmark-icon-container">
-                      <IconDisplay app={app} iconName={b.icon} className="bookmark-icon-el" />
+                      <IconDisplay app={app} iconName={b.icon} color={b.color} className="bookmark-icon-el" />
                     </div>
                     <span className="bookmark-title">
                       {b.title || (b.path ? b.path.split('/').pop()?.replace(/\.[^/.]+$/, "") : 'Untitled')}
