@@ -21,9 +21,10 @@ export class NewTabView extends ItemView {
   }
 
   async onOpen() {
-    const container = this.containerEl.children[1];
+    const container = this.contentEl; // Use contentEl instead of accessing children manually
     container.empty();
     container.addClass("new-tab-search-container");
+    container.addClass("new-tab-page-view");
 
     this.root = ReactDOM.createRoot(container);
     this.root.render(
