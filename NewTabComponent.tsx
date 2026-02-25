@@ -40,6 +40,16 @@ const IconDisplay: React.FC<{ app: App, iconName?: string, color?: string | null
 };
 
 export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
+  const [greeting, setGreeting] = React.useState("");
+
+  // Set greeting based on time
+  React.useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 18) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  }, []);
+
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
@@ -157,18 +167,47 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
 
   return (
     <div className="new-tab-wrapper">
-      <div className="search-container">
-        <input
-          ref={inputRef}
-          type="text"
-          className="search-input"
-          placeholder="Search..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
-        {query && <div className="search-icon-indicator">🔍</div>}
+      <div className="greeting-section">
+        <h1>{greeting}</h1>
+        <div className="date-display">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+
+        {/* Daily Note Widget - moved here */}
+        {!query && (
+          <div className="daily-note-section">
+            <button
+              className="daily-note-widget"
+              onClick={() => {
+                const dailyNotesPlugin = (app as any).internalPlugins?.getPluginById("daily-notes");
+                (app as any).commands.executeCommandById("daily-notes:today");
+              }}
+            >
+              <div className="daily-note-icon-container">
+                <IconDisplay app={app} iconName="calendar" className="daily-note-icon" />
+              </div>
+              <div className="daily-note-content">
+                <span className="daily-note-label">Today's Note</span>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className={`search-container ${query ? 'has-query' : ''}`}>
+        <div className="search-input-wrapper">
+          <input
+            ref={inputRef}
+            type="text"
+            className="search-input"
+            placeholder="Search your mind..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+          <div className="search-icon-indicator">
+            {query ? <IconDisplay app={app} iconName="corner-down-left" /> : <IconDisplay app={app} iconName="search" />}
+          </div>
+        </div>
       </div>
 
       {results.length > 0 ? (
