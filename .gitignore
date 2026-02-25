@@ -1,0 +1,17 @@
+# MacOS
+.DS_Store
+
+# Node
+node_modules/
+dist/
+build/
+.npm-debug.log*
+npm-debug.log*
+
+# Obsidian
+.obsidian/
+
+# Build artifacts
+main.js
+manifest.json
+styles.css
