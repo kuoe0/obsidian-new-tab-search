@@ -1,6 +1,7 @@
 import * as React from "react";
 import { App, TFile } from "obsidian";
 import fuzzysort from "fuzzysort";
+import { getIconForFile, renderIcon } from "./iconUtils";
 
 interface NewTabComponentProps {
   app: App;
@@ -9,16 +10,32 @@ interface NewTabComponentProps {
 interface SearchResult {
   file: TFile;
   score: number;
-  highlightIndexes?: ReadonlyArray<number>;
+  icon?: string;
 }
 
 interface BookmarkItem {
   type: 'file' | 'folder' | 'group' | 'url';
-  path?: string; // for file
-  title?: string; // for url or override
-  items?: BookmarkItem[]; // for group
+  path?: string;
+  title?: string;
+  items?: BookmarkItem[];
   url?: string;
+  icon?: string;
 }
+
+const IconDisplay: React.FC<{ app: App, iconName?: string, className?: string }> = ({ app, iconName, className }) => {
+  const ref = React.useRef<HTMLSpanElement>(null);
+
+  React.useEffect(() => {
+    if (ref.current && iconName) {
+      ref.current.empty();
+      renderIcon(app, iconName, ref.current);
+    }
+  }, [iconName, app]);
+
+  if (!iconName) return <span className={`icon-placeholder ${className || ''}`}>📄</span>;
+
+  return <span ref={ref} className={`icon-render ${className || ''}`} />;
+};
 
 export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
   const [query, setQuery] = React.useState("");
@@ -34,32 +51,47 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
     }
 
     // Fetch bookmarks
-    try {
-      const bookmarksPlugin = (app as any).internalPlugins?.getPluginById("bookmarks");
-      if (bookmarksPlugin?.enabled) {
-        const instance = bookmarksPlugin.instance;
-        const items = instance.items || (instance.getBookmarks ? instance.getBookmarks() : []);
+    const fetchBookmarks = async () => {
+      try {
+        const bookmarksPlugin = (app as any).internalPlugins?.getPluginById("bookmarks");
+        if (bookmarksPlugin?.enabled) {
+          const instance = bookmarksPlugin.instance;
+          const items = instance.items || (instance.getBookmarks ? instance.getBookmarks() : []);
 
-        const flatBookmarks: BookmarkItem[] = [];
+            const flatBookmarks: BookmarkItem[] = [];
 
-        const traverse = (items: BookmarkItem[]) => {
-          for (const item of items) {
-            if (item.type === 'file') {
-              flatBookmarks.push(item);
-            } else if (item.type === 'group' && item.items) {
-              traverse(item.items);
+            const traverse = (items: BookmarkItem[]) => {
+              for (const item of items) {
+                if (item.type === 'file') {
+                  flatBookmarks.push(item);
+                } else if (item.type === 'group' && item.items) {
+                  traverse(item.items);
+                }
+              }
+            };
+
+            if (Array.isArray(items)) {
+              traverse(items);
             }
-          }
-        };
 
-        if (Array.isArray(items)) {
-          traverse(items);
+            // Enrich with icons
+            const enriched = await Promise.all(flatBookmarks.slice(0, 10).map(async (b) => {
+              let icon = "lucide-file";
+              if (b.type === 'file' && b.path) {
+                const file = app.vault.getAbstractFileByPath(b.path);
+                if (file instanceof TFile) {
+                  icon = await getIconForFile(app, file);
+                }
+              }
+              return { ...b, icon };
+            }));
+            setBookmarks(enriched);
+          }
+        } catch (e) {
+          console.error("Failed to fetch bookmarks", e);
         }
-        setBookmarks(flatBookmarks.slice(0, 10)); // Limit to 10 for grid
-      }
-    } catch (e) {
-      console.error("Failed to fetch bookmarks", e);
-    }
+    };
+    fetchBookmarks();
   }, [app]);
 
   // Search Logic
@@ -82,17 +114,20 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
       threshold: -10000,
     });
 
-    setResults(results.map(r => ({
-      file: r.obj.file,
-      score: r.score,
-      highlightIndexes: fuzzysort.indexes(r) as number[]
-    })));
-    setSelectedIndex(0);
+    const processResults = async () => {
+      const mapped = await Promise.all(results.map(async r => ({
+        file: r.obj.file,
+        score: r.score,
+        icon: await getIconForFile(app, r.obj.file)
+      })));
+      setResults(mapped);
+      setSelectedIndex(0);
+    };
+    processResults();
 
   }, [query, app.vault]);
 
   const openFile = (file: TFile) => {
-    // Open file in the current leaf (replacing the New Tab view effectively if it's not pinned)
     app.workspace.getLeaf(false).openFile(file);
   };
 
@@ -118,11 +153,13 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
           ref={inputRef}
           type="text"
           className="search-input"
-          placeholder="Change the world..."
+          placeholder="Search..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
+          autoFocus
         />
+        {query && <div className="search-icon-indicator">🔍</div>}
       </div>
 
       {results.length > 0 ? (
@@ -134,7 +171,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
               onClick={() => openFile(result.file)}
               onMouseEnter={() => setSelectedIndex(index)}
             >
-              <span className="result-icon">📄</span>
+              <IconDisplay app={app} iconName={result.icon} className="result-icon-el" />
               <div className="result-info">
                 <span className="result-name">{result.file.basename}</span>
                 <span className="result-path">{result.file.parent?.path}</span>
@@ -144,30 +181,29 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
         </div>
       ) : (
         !query && bookmarks.length > 0 && (
-          <div className="bookmarks-container">
-            <h3>Bookmarks</h3>
-            <div className="bookmarks-grid">
-              {bookmarks.map((b, i) => (
-                <div
-                  key={i}
-                  className="bookmark-item"
-                  onClick={() => {
-                    if (b.type === 'file' && b.path) {
-                      const file = app.vault.getAbstractFileByPath(b.path);
-                      if (file instanceof TFile) {
-                        openFile(file);
+            <div className="bookmarks-section">
+              <div className="bookmarks-grid">
+                {bookmarks.map((b, i) => (
+                  <div
+                    key={i} 
+                    className="bookmark-card"
+                    onClick={() => {
+                      if (b.type === 'file' && b.path) {
+                        const file = app.vault.getAbstractFileByPath(b.path);
+                        if (file instanceof TFile) {
+                          openFile(file);
+                        }
                       }
-                    }
-                  }}
-                >
-                  <span className="bookmark-icon">
-                    {b.type === 'file' ? '📄' : '⭐'}
-                  </span>
-                  <span className="bookmark-title">
-                    {b.title || (b.path ? b.path.split('/').pop() : 'Untitled')}
-                  </span>
-                </div>
-              ))}
+                    }}
+                  >
+                    <div className="bookmark-icon-container">
+                      <IconDisplay app={app} iconName={b.icon} className="bookmark-icon-el" />
+                    </div>
+                    <span className="bookmark-title">
+                      {b.title || (b.path ? b.path.split('/').pop()?.replace(/\.[^/.]+$/, "") : 'Untitled')}
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
         )
@@ -175,3 +211,4 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
     </div>
   );
 };
+
