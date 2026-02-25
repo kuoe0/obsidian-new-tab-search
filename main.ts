@@ -1,22 +1,8 @@
-import { Plugin, WorkspaceLeaf, PluginSettingTab, App, Setting } from "obsidian";
+import { Plugin, WorkspaceLeaf } from "obsidian";
 import { NewTabView, NEW_TAB_VIEW_TYPE } from "./view";
 
-interface NewTabSettings {
-  replaceNewTab: boolean;
-  focusSearch: boolean;
-}
-
-const DEFAULT_SETTINGS: NewTabSettings = {
-  replaceNewTab: true,
-  focusSearch: true,
-}
-
 export default class NewTabPlugin extends Plugin {
-  settings!: NewTabSettings;
-
   async onload() {
-    await this.loadSettings();
-
     this.registerView(
       NEW_TAB_VIEW_TYPE,
       (leaf) => new NewTabView(leaf)
@@ -34,13 +20,11 @@ export default class NewTabPlugin extends Plugin {
       this.activateView();
     });
 
-    this.addSettingTab(new NewTabSettingTab(this.app, this));
-
     // Override New Tab behavior
     // Use leaf-change event to detect when we switch to an empty leaf or create one
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => { // Triggered when active leaf changes
-        if (this.settings.replaceNewTab && leaf) {
+        if (leaf) {
           // Check if valid leaf and is empty
           if (leaf.view.getViewType() === "empty") {
             this.activateView(leaf);
@@ -48,27 +32,9 @@ export default class NewTabPlugin extends Plugin {
         }
       })
     );
-
-    this.registerEvent(
-      this.app.workspace.on("layout-change", () => {
-        // optional: strictly enforce? Might be too aggressive.
-        // active-leaf-change is usually sufficient for "active" tab.
-        // But what if I middle click to open new tab in background?
-        // Then it won't be active.
-        // Not covering background tabs for now to avoid complexity/performance issues.
-      })
-    )
   }
 
   onunload() {
-  }
-
-  async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-  }
-
-  async saveSettings() {
-    await this.saveData(this.settings);
   }
 
   /**
@@ -96,32 +62,5 @@ export default class NewTabPlugin extends Plugin {
     }
 
     workspace.revealLeaf(leaf);
-  }
-}
-
-class NewTabSettingTab extends PluginSettingTab {
-  plugin: NewTabPlugin;
-
-  constructor(app: App, plugin: NewTabPlugin) {
-    super(app, plugin);
-    this.plugin = plugin;
-  }
-
-  display(): void {
-    const { containerEl } = this;
-
-    containerEl.empty();
-
-    new Setting(containerEl)
-      .setName("Replace New Tab")
-      .setDesc("Automatically open this view when opening a new tab (empty tab).")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.replaceNewTab)
-          .onChange(async (value) => {
-            this.plugin.settings.replaceNewTab = value;
-            await this.plugin.saveSettings();
-          })
-      );
   }
 }
