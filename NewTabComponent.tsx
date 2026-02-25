@@ -192,48 +192,63 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
         )}
       </div>
 
-      <div className={`search-container ${query ? 'has-query' : ''}`}>
-        <div className="search-input-wrapper">
-          <input
-            ref={inputRef}
-            type="text"
-            className="search-input"
-            placeholder="Search your mind..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-          />
-          <div className="search-icon-indicator">
-            {query ? <IconDisplay app={app} iconName="corner-down-left" /> : <IconDisplay app={app} iconName="search" />}
+      <div className="search-group">
+        <div className={`search-container ${query ? 'has-query' : ''} ${results.length > 0 ? 'has-results' : ''}`}>
+          <div className="search-input-wrapper">
+            <input
+              ref={inputRef}
+              type="text"
+              className="search-input"
+              placeholder="Search your mind..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+            />
+            <div className="search-right-section">
+              {query && (
+                <button
+                  className={`search-clear-btn ${query ? 'visible' : ''}`}
+                  onClick={() => {
+                    setQuery("");
+                    inputRef.current?.focus();
+                  }}
+                  aria-label="Clear search"
+                >
+                  <IconDisplay app={app} iconName="x" />
+                </button>
+              )}
+              <div className="search-icon-indicator">
+                {query ? <IconDisplay app={app} iconName="corner-down-left" /> : <IconDisplay app={app} iconName="search" />}
+              </div>
+          </div>
           </div>
         </div>
-      </div>
 
-      {results.length > 0 ? (
-        <div className="search-results">
-          {results.map((result, index) => (
-            <div
-              key={result.file.path}
-              className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
-              onClick={() => openFile(result.file)}
-              onMouseEnter={() => setSelectedIndex(index)}
-            >
-              <IconDisplay app={app} iconName={result.icon} color={result.color} className="result-icon-el" />
-              <div className="result-info">
-                <span className="result-name">{result.file.basename}</span>
-                <span className="result-path">{result.file.parent?.path}</span>
+        {results.length > 0 ? (
+          <div className="search-results">
+            {results.map((result, index) => (
+              <div
+                key={result.file.path}
+                className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
+                onClick={() => openFile(result.file)}
+                onMouseEnter={() => setSelectedIndex(index)}
+              >
+                <IconDisplay app={app} iconName={result.icon} color={result.color} className="result-icon-el" />
+                <div className="result-info">
+                  <span className="result-name">{result.file.basename}</span>
+                  <span className="result-path">{result.file.parent?.path}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        !query && bookmarks.length > 0 && (
+            ))}
+          </div>
+        ) : (
+          !query && bookmarks.length > 0 && (
             <div className="bookmarks-section">
               <div className="bookmarks-grid">
                 {bookmarks.map((b, i) => (
                   <div
-                    key={i} 
+                    key={i}
                     className="bookmark-card"
                     onClick={() => {
                       if (b.type === 'file' && b.path) {
@@ -252,10 +267,11 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app }) => {
                     </span>
                   </div>
                 ))}
+              </div>
             </div>
-          </div>
-        )
-      )}
+          )
+        )}
+      </div>
     </div>
   );
 };

@@ -117,9 +117,22 @@
     color: var(--text-muted);
     font-weight: 500;
     margin-top: 0.5rem;
+    margin-top: 0.5rem;
     opacity: 0.8;
 }
 
+/* Search Group Wrapper */
+.search-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Strict zero gap for seamless connection */
+    flex: 1;
+    /* Allow it to grow/shrink properly */
+    min-height: 0;
+    /* For scrolling */
+}
 /* Search Bar */
 .search-container {
     width: 100%;
@@ -171,18 +184,71 @@
     transform: scale(1.01);
 }
 
-.search-icon-indicator {
+.search-right-section {
     position: absolute;
     right: 2rem;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        pointer-events: none;
+        /* Let clicks pass through unless on button */
+    }
+    
+    .search-icon-indicator {
     opacity: 0.4;
     font-size: 1.4rem;
-    pointer-events: none;
     transition: opacity 0.2s;
 }
 
-.search-input:focus ~ .search-icon-indicator {
+.search-clear-btn {
+    /* Aggressively reset button styles */
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        outline: none !important;
+        border-radius: 0 !important;
+        height: auto !important;
+    
+        /* Positioning and Layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    
+        /* Initial hidden state */
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    
+        /* Matches text color but dimmed via opacity */
+        color: var(--text-normal);
+}
+
+.search-clear-btn svg {
+    width: 20px;
+        height: 20px;
+        stroke-width: 2px;
+}
+
+.search-clear-btn:hover {
+    background: none !important;
+        opacity: 1 !important;
+        /* Brighten fully on hover */
+}
+
+.search-clear-btn.visible {
+    opacity: 0.4;
+        /* Match the indicator's default opacity */
+    pointer-events: auto;
+    transform: none;
+        /* No scaling */
+}
+
+.search-input:focus~.search-right-section .search-icon-indicator {
     opacity: 0.8;
     color: var(--interactive-accent);
 }
@@ -294,21 +360,30 @@
 }
 
 /* Scrollable Content Regions */
-.bookmarks-section,
-.search-results {
+/* Scrollable Content Regions */
+.bookmarks-section {
     width: 100%;
     flex: 1;
-        /* Take remaining space */
+        /* Bookmarks can take remaining space */
         overflow-y: auto;
-        /* Scroll internally */
-        overflow-x: hidden;
+    overflow-x: hidden;
         min-height: 0;
-        /* Important for flex scrolling */
-        padding-top: 1rem;
-        /* Added padding top for separation */
-        padding-bottom: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
     animation: fadeIn 0.8s 0.3s backwards;
-    /* Custom Scrollbar - Only visible when scrolling usually */
+    scrollbar-width: thin;
+        scrollbar-color: var(--text-muted) transparent;
+    }
+    
+    .search-results {
+        width: 100%;
+        flex: 0 1 auto;
+        /* Adaptive height */
+        max-height: 60vh;
+        /* Cap height */
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-bottom: 0.5rem;
         scrollbar-width: thin;
         scrollbar-color: var(--text-muted) transparent;
     }
@@ -406,21 +481,73 @@
     opacity: 0.9;
 }
 
+/* CSS for seamless search and mobile focus */
+
+/* Mobile Focus Mode: Hide greeting/widgets when typing to see results */
+@media screen and (max-width: 768px) {
+
+    .new-tab-wrapper:focus-within .greeting-section,
+    .new-tab-wrapper:focus-within .daily-note-section {
+        display: none;
+    }
+
+    .new-tab-wrapper:focus-within {
+        padding-top: 1rem;
+        /* Less padding when focused to maximize space */
+        justify-content: flex-start;
+    }
+}
+
+/* Search Bar Connection Logic */
+.search-container.has-query {
+    transform: none;
+    /* Disable shift */
+}
+
+/* Only connect if there are actual results */
+.search-container.has-results .search-input {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1px solid transparent;
+    /* Hide bottom border to merge */
+    border-color: var(--background-modifier-border);
+    background-color: var(--background-primary);
+    box-shadow: none;
+    z-index: 25;
+    /* Ensure on top of results if needed */
+}
+
+/* Override focus state when results are present to maintain connection */
+.search-container.has-results .search-input:focus {
+    transform: none !important;
+        /* Force disable scale disconnect */
+        box-shadow: none !important;
+        /* Remove focus shadow that might overlap */
+        border-bottom-color: transparent !important;
+            border-bottom-left-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+}
 /* Search Results Specifics */
 .search-results {
     background-color: var(--background-primary);
-    border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    border-radius: 0 0 24px 24px;
+        /* Match input curvature */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--background-modifier-border);
-    padding: 0.8rem;
-    margin-top: 0;
-    /* Attached to header logic */
+    border-top: none;
+        /* No top border */
+    padding: 0.5rem;
+    margin-top: -1px;
+        /* Overlap exactly to hide any sub-pixel gaps */
     display: block;
-    /* Ensure block model */
-    max-height: none;
-    /* Let flex handle height */
-    padding-top: 0.8rem;
-    /* Restore padding */
+    max-height: 60vh;
+        /* Cap height */
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-top: 0;
+        position: relative;
+        top: 0;
+        z-index: 24;
 }
 
 .search-result-item {
@@ -434,6 +561,10 @@
     margin-bottom: 4px;
 }
 
+.search-result-item:first-child {
+    margin-top: 0.5rem;
+    /* Add spacing back internally */
+}
 .search-result-item.selected,
 .search-result-item:hover {
     background-color: var(--background-modifier-hover);
@@ -524,4 +655,9 @@
     .bookmark-title {
         font-size: 0.8rem;
     }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                /* Ensure search results take full space on mobile when focused */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .new-tab-wrapper:focus-within .search-results {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    max-height: 80vh;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    /* Allow more height */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
