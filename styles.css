@@ -617,7 +617,7 @@
 /* Mobile Adjustments */
 @media screen and (max-width: 768px) {
     .new-tab-wrapper {
-        padding: 1rem;
+        padding: max(3.5rem, env(safe-area-inset-top)) 1rem 1rem 1rem;
             gap: 0.5rem;
             /* Reduced gap since flexible regions handle spacing */
     }
