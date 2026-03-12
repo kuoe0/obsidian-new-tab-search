@@ -57,6 +57,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
   const [bookmarks, setBookmarks] = React.useState<BookmarkItem[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+
   // Initial focus and fetch bookmarks
   React.useEffect(() => {
     if (inputRef.current) {
@@ -108,6 +109,9 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
       }
     };
     fetchBookmarks();
+
+
+
   }, [app]);
 
   // Search Logic
@@ -203,6 +207,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
 
   return (
     <div className="new-tab-wrapper">
+      {(app as any).isMobile && <div className="mobile-ui-spacer" />}
       <div className="greeting-section">
         <h1>{greeting}</h1>
         <div className="date-display">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
