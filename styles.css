@@ -108,6 +108,7 @@
     font-weight: 800;
     margin: 0;
     background: linear-gradient(135deg, var(--text-normal) 30%, var(--text-muted));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.02em;
@@ -538,7 +539,7 @@
 /* Search Results Specifics */
 .search-results {
     background-color: var(--background-primary);
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 24px 24px;
         /* Tighter radius as requested */
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--background-modifier-border);

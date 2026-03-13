@@ -114,6 +114,41 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
 
   }, [app]);
 
+  // Daily note handler setup
+  React.useEffect(() => {
+    const button = document.getElementById('daily-note-button');
+
+    const handleDailyNote = () => {
+      const commands = (app as any).commands;
+      const commandIds = [
+        "daily-notes",
+        "daily-notes:today",
+        "periodic-notes:open-daily-note",
+        "periodic-notes:today"
+      ];
+
+      let executed = false;
+      for (const id of commandIds) {
+        if (commands.findCommand(id)) {
+          commands.executeCommandById(id);
+          executed = true;
+          break;
+        }
+      }
+      if (!executed) {
+        console.warn("Could not find a command to open the daily note.");
+      }
+    };
+
+    if (button) {
+      button.addEventListener('click', handleDailyNote);
+
+      return () => {
+        button.removeEventListener('click', handleDailyNote);
+      };
+    }
+  }, [app]);
+
   // Search Logic
   React.useEffect(() => {
     if (!query) {
@@ -176,34 +211,7 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
     }
   };
 
-  const handleDailyNote = () => {
-    const commands = (app as any).commands;
-    // Try reliable commands in order
-    const commandIds = [
-      "daily-notes",           // Internal core command ID (often)
-      "daily-notes:today",     // Common alias or explicit ID
-      "periodic-notes:open-daily-note", // Periodic notes plugin
-      "periodic-notes:today"   // Another potential ID
-    ];
 
-    let executed = false;
-    for (const id of commandIds) {
-      if (commands.findCommand(id)) {
-        commands.executeCommandById(id);
-        executed = true;
-        break;
-      }
-    }
-
-    if (!executed) {
-      // Last resort: check if core plugin is enabled but maybe command is hidden?
-      const dailyNotesPlugin = (app as any).internalPlugins?.getPluginById("daily-notes");
-      if (dailyNotesPlugin && !dailyNotesPlugin.enabled) {
-        // Maybe notify user? For now just try the ID anyway.
-        console.warn("Daily Notes plugin might be disabled.");
-      }
-    }
-  };
 
   return (
     <div className="new-tab-wrapper">
@@ -216,8 +224,8 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
         {!query && (
           <div className="daily-note-section">
             <button
+              id="daily-note-button"
               className="daily-note-widget"
-              onClick={handleDailyNote}
             >
               <div className="daily-note-icon-container">
                 <IconDisplay app={app} iconName="calendar" className="daily-note-icon" />
