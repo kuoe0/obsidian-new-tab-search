@@ -1,5 +1,5 @@
 import * as React from "react";
-import { App, TFile, WorkspaceLeaf } from "obsidian";
+import { App, TFile, WorkspaceLeaf, normalizePath, moment } from "obsidian";
 import fuzzysort from "fuzzysort";
 import { getIconForFile, renderIcon } from "./iconUtils";
 
@@ -118,7 +118,47 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
   React.useEffect(() => {
     const button = document.getElementById('daily-note-button');
 
-    const handleDailyNote = () => {
+    const handleDailyNote = async () => {
+      try {
+        let format = "YYYY-MM-DD";
+        let folder = "";
+        
+        const dailyNotesPlugin = (app as any).internalPlugins?.getPluginById("daily-notes")?.instance;
+        if (dailyNotesPlugin?.options) {
+          format = dailyNotesPlugin.options.format || format;
+          folder = dailyNotesPlugin.options.folder || folder;
+        }
+        
+        const periodicNotes = (app as any).plugins?.getPlugin("periodic-notes");
+        if (periodicNotes?.settings?.daily) {
+          format = periodicNotes.settings.daily.format || format;
+          folder = periodicNotes.settings.daily.folder || folder;
+        }
+
+        const date = window.moment();
+        const basename = date.format(format);
+        let path = folder ? `${folder}/${basename}.md` : `${basename}.md`;
+        path = normalizePath(path);
+
+        const abstractFile = app.vault.getAbstractFileByPath(path);
+        
+        let fileToOpen = abstractFile;
+        if (!fileToOpen) {
+           fileToOpen = app.metadataCache.getFirstLinkpathDest(basename, "");
+        }
+
+        if (fileToOpen instanceof TFile) {
+          if (leaf) {
+            await leaf.openFile(fileToOpen);
+          } else {
+            await app.workspace.getLeaf(false).openFile(fileToOpen);
+          }
+          return;
+        }
+      } catch (e) {
+        console.error("Error trying to find daily note:", e);
+      }
+
       const commands = (app as any).commands;
       const commandIds = [
         "daily-notes",
