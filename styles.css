@@ -361,7 +361,22 @@
     display: none; /* Simplify for elegance */
 }
 
-/* Scrollable Content Regions */
+.section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+    padding-left: 2px;
+}
+
+.recent-files-section {
+    flex: 0 0 auto !important;
+    padding-bottom: 0 !important;
+}
+
 /* Scrollable Content Regions */
 .bookmarks-section {
     width: 100%;

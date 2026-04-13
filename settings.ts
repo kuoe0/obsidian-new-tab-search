@@ -50,5 +50,17 @@ export class NewTabSettingTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
             );
+
+        new Setting(containerEl)
+            .setName("Show Recent Files")
+            .setDesc("Show your recently opened files when search is empty.")
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.showRecentFiles)
+                    .onChange(async (value) => {
+                        this.plugin.settings.showRecentFiles = value;
+                        await this.plugin.saveSettings();
+                    })
+            );
     }
 }

@@ -26,12 +26,14 @@ export interface NewTabSettings {
     showDailyNote: boolean;
     customGreeting: string;
     showBookmarks: boolean;
+    showRecentFiles: boolean;
 }
 
 export const DEFAULT_SETTINGS: NewTabSettings = {
     showDailyNote: true,
     customGreeting: "",
     showBookmarks: true,
+    showRecentFiles: true,
 };
 
 // Internal Obsidian API types

@@ -10,6 +10,7 @@ import { DailyNoteWidget } from "./components/DailyNoteWidget";
 import { SearchBar } from "./components/SearchBar";
 import { SearchResults } from "./components/SearchResults";
 import { BookmarksGrid } from "./components/BookmarksGrid";
+import { RecentFilesGrid } from "./components/RecentFilesGrid";
 
 interface NewTabComponentProps {
   app: App;
@@ -39,6 +40,23 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf, set
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [bookmarks, setBookmarks] = React.useState<BookmarkItem[]>([]);
+  const [recentFiles, setRecentFiles] = React.useState<TFile[]>([]);
+
+  // Fetch recent files
+  React.useEffect(() => {
+    if (!settings.showRecentFiles) {
+      setRecentFiles([]);
+      return;
+    }
+
+    const lastFiles = app.workspace.getLastOpenFiles();
+    const files = lastFiles
+      .map(path => app.vault.getAbstractFileByPath(path))
+      .filter((file): file is TFile => file instanceof TFile)
+      .slice(0, 4);
+    
+    setRecentFiles(files);
+  }, [app, settings.showRecentFiles]);
 
   // Fetch bookmarks
   React.useEffect(() => {
@@ -183,12 +201,27 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf, set
             setSelectedIndex={setSelectedIndex}
           />
         ) : (
-          !query && settings.showBookmarks && (
-            <BookmarksGrid
-              app={app}
-              bookmarks={bookmarks}
-              onSelect={openFile}
-            />
+          !query && (
+            <div className="bookmarks-section">
+              {settings.showRecentFiles && recentFiles.length > 0 && (
+                <RecentFilesGrid
+                  app={app}
+                  recentFiles={recentFiles}
+                  onSelect={openFile}
+                />
+              )}
+              
+              {settings.showBookmarks && bookmarks.length > 0 && (
+                <>
+                  <h3 className="section-title">Bookmarks</h3>
+                  <BookmarksGrid
+                    app={app}
+                    bookmarks={bookmarks}
+                    onSelect={openFile}
+                  />
+                </>
+              )}
+            </div>
           )
         )}
       </div>
