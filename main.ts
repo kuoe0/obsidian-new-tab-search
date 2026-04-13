@@ -1,12 +1,20 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import { NewTabView, NEW_TAB_VIEW_TYPE } from "./view";
+import { NewTabSettings, DEFAULT_SETTINGS } from "./types";
+import { NewTabSettingTab } from "./settings";
 
 export default class NewTabPlugin extends Plugin {
+  settings: NewTabSettings = DEFAULT_SETTINGS;
+
   async onload() {
+    await this.loadSettings();
+
     this.registerView(
       NEW_TAB_VIEW_TYPE,
-      (leaf) => new NewTabView(leaf)
+      (leaf) => new NewTabView(leaf, this)
     );
+
+    this.addSettingTab(new NewTabSettingTab(this.app, this));
 
     this.addCommand({
       id: "open-new-tab-page",
@@ -37,6 +45,20 @@ export default class NewTabPlugin extends Plugin {
   onunload() {
   }
 
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+    // Refresh all open new tab views
+    this.app.workspace.getLeavesOfType(NEW_TAB_VIEW_TYPE).forEach((leaf) => {
+      if (leaf.view instanceof NewTabView) {
+        leaf.view.refresh();
+      }
+    });
+  }
+
   /**
    * Activates the view. If a leaf is provided, uses that leaf.
    * Otherwise tries to find existing or create new.
@@ -53,13 +75,10 @@ export default class NewTabPlugin extends Plugin {
       }
     }
 
-    // If we are replacing an empty leaf, we definitely want to setViewState
-    if (leaf.view.getViewType() !== NEW_TAB_VIEW_TYPE) {
-      await leaf.setViewState({
-        type: NEW_TAB_VIEW_TYPE,
-        active: true,
-      });
-    }
+    await leaf.setViewState({
+      type: NEW_TAB_VIEW_TYPE,
+      active: true,
+    });
 
     workspace.revealLeaf(leaf);
   }
