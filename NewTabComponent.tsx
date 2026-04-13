@@ -1,73 +1,57 @@
 import * as React from "react";
-import { App, TFile, WorkspaceLeaf, normalizePath, moment } from "obsidian";
+import { App, TFile, WorkspaceLeaf } from "obsidian";
 import fuzzysort from "fuzzysort";
-import { getIconForFile, renderIcon } from "./iconUtils";
+import { getIconForFile } from "./iconUtils";
+import { BookmarkItem, SearchResult, NewTabSettings, AppWithInternalPlugins } from "./types";
+
+// Components
+import { GreetingSection } from "./components/GreetingSection";
+import { DailyNoteWidget } from "./components/DailyNoteWidget";
+import { SearchBar } from "./components/SearchBar";
+import { SearchResults } from "./components/SearchResults";
+import { BookmarksGrid } from "./components/BookmarksGrid";
 
 interface NewTabComponentProps {
   app: App;
   leaf: WorkspaceLeaf;
+  settings: NewTabSettings;
 }
 
-interface SearchResult {
-  file: TFile;
-  score: number;
-  icon?: string;
-  color?: string | null;
-}
-
-interface BookmarkItem {
-  type: 'file' | 'folder' | 'group' | 'url';
-  path?: string;
-  title?: string;
-  items?: BookmarkItem[];
-  url?: string;
-  icon?: string;
-  color?: string | null;
-}
-
-const IconDisplay: React.FC<{ app: App, iconName?: string, color?: string | null, className?: string }> = ({ app, iconName, color, className }) => {
-  const ref = React.useRef<HTMLSpanElement>(null);
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
 
   React.useEffect(() => {
-    if (ref.current && iconName) {
-      ref.current.empty();
-      renderIcon(app, iconName, ref.current, color);
-    }
-  }, [iconName, color, app]);
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
 
-  if (!iconName) return <span className={`icon-placeholder ${className || ''}`}>📄</span>;
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
 
-  return <span ref={ref} className={`icon-render ${className || ''}`} />;
-};
+  return debouncedValue;
+}
 
-export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) => {
-  const [greeting, setGreeting] = React.useState("");
-
-  // Set greeting based on time
-  React.useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good Morning");
-    else if (hour < 18) setGreeting("Good Afternoon");
-    else setGreeting("Good Evening");
-  }, []);
-
+export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf, settings }) => {
   const [query, setQuery] = React.useState("");
+  const debouncedQuery = useDebounce(query, 200);
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [bookmarks, setBookmarks] = React.useState<BookmarkItem[]>([]);
-  const inputRef = React.useRef<HTMLInputElement>(null);
 
-
-  // Initial focus and fetch bookmarks
+  // Fetch bookmarks
   React.useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
+    if (!settings.showBookmarks) {
+      setBookmarks([]);
+      return;
     }
 
-    // Fetch bookmarks
     const fetchBookmarks = async () => {
       try {
-        const bookmarksPlugin = (app as any).internalPlugins?.getPluginById("bookmarks");
+        const typedApp = app as AppWithInternalPlugins;
+        const bookmarksPlugin = typedApp.internalPlugins?.getPluginById("bookmarks");
+        
         if (bookmarksPlugin?.enabled) {
           const instance = bookmarksPlugin.instance;
           const items = instance.items || (instance.getBookmarks ? instance.getBookmarks() : []);
@@ -109,89 +93,11 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
       }
     };
     fetchBookmarks();
-
-
-
-  }, [app]);
-
-  // Daily note handler setup
-  React.useEffect(() => {
-    const button = document.getElementById('daily-note-button');
-
-    const handleDailyNote = async () => {
-      try {
-        let format = "YYYY-MM-DD";
-        let folder = "";
-        
-        const dailyNotesPlugin = (app as any).internalPlugins?.getPluginById("daily-notes")?.instance;
-        if (dailyNotesPlugin?.options) {
-          format = dailyNotesPlugin.options.format || format;
-          folder = dailyNotesPlugin.options.folder || folder;
-        }
-        
-        const periodicNotes = (app as any).plugins?.getPlugin("periodic-notes");
-        if (periodicNotes?.settings?.daily) {
-          format = periodicNotes.settings.daily.format || format;
-          folder = periodicNotes.settings.daily.folder || folder;
-        }
-
-        const date = window.moment();
-        const basename = date.format(format);
-        let path = folder ? `${folder}/${basename}.md` : `${basename}.md`;
-        path = normalizePath(path);
-
-        const abstractFile = app.vault.getAbstractFileByPath(path);
-        
-        let fileToOpen = abstractFile;
-        if (!fileToOpen) {
-           fileToOpen = app.metadataCache.getFirstLinkpathDest(basename, "");
-        }
-
-        if (fileToOpen instanceof TFile) {
-          if (leaf) {
-            await leaf.openFile(fileToOpen);
-          } else {
-            await app.workspace.getLeaf(false).openFile(fileToOpen);
-          }
-          return;
-        }
-      } catch (e) {
-        console.error("Error trying to find daily note:", e);
-      }
-
-      const commands = (app as any).commands;
-      const commandIds = [
-        "daily-notes",
-        "daily-notes:today",
-        "periodic-notes:open-daily-note",
-        "periodic-notes:today"
-      ];
-
-      let executed = false;
-      for (const id of commandIds) {
-        if (commands.findCommand(id)) {
-          commands.executeCommandById(id);
-          executed = true;
-          break;
-        }
-      }
-      if (!executed) {
-        console.warn("Could not find a command to open the daily note.");
-      }
-    };
-
-    if (button) {
-      button.addEventListener('click', handleDailyNote);
-
-      return () => {
-        button.removeEventListener('click', handleDailyNote);
-      };
-    }
-  }, [app]);
+  }, [app, settings.showBookmarks]);
 
   // Search Logic
   React.useEffect(() => {
-    if (!query) {
+    if (!debouncedQuery) {
       setResults([]);
       return;
     }
@@ -203,14 +109,14 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
       name: f.basename
     }));
 
-    const results = fuzzysort.go(query, targets, {
+    const searchResults = fuzzysort.go(debouncedQuery, targets, {
       key: 'path',
       limit: 10,
       threshold: -10000,
     });
 
     const processResults = async () => {
-      const mapped = await Promise.all(results.map(async r => {
+      const mapped = await Promise.all(searchResults.map(async r => {
         const iconInfo = await getIconForFile(app, r.obj.file);
         return {
           file: r.obj.file,
@@ -224,14 +130,12 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
     };
     processResults();
 
-  }, [query, app.vault]);
+  }, [debouncedQuery, app.vault]);
 
   const openFile = (file: TFile) => {
-    // Open in this exact leaf (replacing the new tab page)
     if (leaf) {
       leaf.openFile(file);
     } else {
-      // Fallback if leaf is missing for some reason
       app.workspace.getLeaf(false).openFile(file);
     }
   };
@@ -251,114 +155,43 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf }) =
     }
   };
 
-
-
   return (
     <div className="new-tab-wrapper">
       {(app as any).isMobile && <div className="mobile-ui-spacer" />}
-      <div className="greeting-section">
-        <h1>{greeting}</h1>
-        <div className="date-display">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+      
+      <GreetingSection customGreeting={settings.customGreeting} />
 
-        {/* Daily Note Widget - moved here */}
-        {!query && (
-          <div className="daily-note-section">
-            <button
-              id="daily-note-button"
-              className="daily-note-widget"
-            >
-              <div className="daily-note-icon-container">
-                <IconDisplay app={app} iconName="calendar" className="daily-note-icon" />
-              </div>
-              <div className="daily-note-content">
-                <span className="daily-note-label">Today's Note</span>
-              </div>
-            </button>
-          </div>
-        )}
-      </div>
+      {!query && settings.showDailyNote && (
+        <DailyNoteWidget app={app} leaf={leaf} />
+      )}
 
       <div className="search-group">
-        <div className={`search-container ${query ? 'has-query' : ''} ${results.length > 0 ? 'has-results' : ''}`}>
-          <div className="search-input-wrapper">
-            <input
-              ref={inputRef}
-              type="text"
-              className="search-input"
-              placeholder="Search your mind..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              autoFocus
-            />
-            <div className="search-right-section">
-              {query && (
-                <button
-                  className={`search-clear-btn ${query ? 'visible' : ''}`}
-                  onClick={() => {
-                    setQuery("");
-                    inputRef.current?.focus();
-                  }}
-                  aria-label="Clear search"
-                >
-                  <IconDisplay app={app} iconName="x" />
-                </button>
-              )}
-              <div className="search-icon-indicator">
-                {query ? <IconDisplay app={app} iconName="corner-down-left" /> : <IconDisplay app={app} iconName="search" />}
-              </div>
-            </div>
-          </div>
-        </div>
+        <SearchBar
+          app={app}
+          query={query}
+          setQuery={setQuery}
+          onKeyDown={handleKeyDown}
+          resultsCount={results.length}
+        />
 
         {results.length > 0 ? (
-          <div className="search-results">
-            {results.map((result, index) => (
-              <div
-                key={result.file.path}
-                className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
-                onClick={() => openFile(result.file)}
-                onMouseEnter={() => setSelectedIndex(index)}
-              >
-                <IconDisplay app={app} iconName={result.icon} color={result.color} className="result-icon-el" />
-                <div className="result-info">
-                  <span className="result-name">{result.file.basename}</span>
-                  <span className="result-path">{result.file.parent?.path}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <SearchResults
+            app={app}
+            results={results}
+            selectedIndex={selectedIndex}
+            onSelect={openFile}
+            setSelectedIndex={setSelectedIndex}
+          />
         ) : (
-          !query && bookmarks.length > 0 && (
-            <div className="bookmarks-section">
-              <div className="bookmarks-grid">
-                {bookmarks.map((b, i) => (
-                  <div
-                    key={i}
-                    className="bookmark-card"
-                    onClick={() => {
-                      if (b.type === 'file' && b.path) {
-                        const file = app.vault.getAbstractFileByPath(b.path);
-                        if (file instanceof TFile) {
-                          openFile(file);
-                        }
-                      }
-                    }}
-                  >
-                    <div className="bookmark-icon-container">
-                      <IconDisplay app={app} iconName={b.icon} color={b.color} className="bookmark-icon-el" />
-                    </div>
-                    <span className="bookmark-title">
-                      {b.title || (b.path ? b.path.split('/').pop()?.replace(/\.[^/.]+$/, "") : 'Untitled')}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          !query && settings.showBookmarks && (
+            <BookmarksGrid
+              app={app}
+              bookmarks={bookmarks}
+              onSelect={openFile}
+            />
           )
         )}
       </div>
     </div>
   );
 };
-
