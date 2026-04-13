@@ -1094,7 +1094,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher.useContext(Context);
         }
-        function useState2(initialState) {
+        function useState3(initialState) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useState(initialState);
         }
@@ -1102,11 +1102,11 @@ var require_react_development = __commonJS({
           var dispatcher = resolveDispatcher();
           return dispatcher.useReducer(reducer, initialArg, init);
         }
-        function useRef2(initialValue) {
+        function useRef3(initialValue) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useRef(initialValue);
         }
-        function useEffect2(create, deps) {
+        function useEffect5(create, deps) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useEffect(create, deps);
         }
@@ -1889,15 +1889,15 @@ var require_react_development = __commonJS({
         exports.useContext = useContext;
         exports.useDebugValue = useDebugValue;
         exports.useDeferredValue = useDeferredValue;
-        exports.useEffect = useEffect2;
+        exports.useEffect = useEffect5;
         exports.useId = useId;
         exports.useImperativeHandle = useImperativeHandle;
         exports.useInsertionEffect = useInsertionEffect;
         exports.useLayoutEffect = useLayoutEffect;
         exports.useMemo = useMemo;
         exports.useReducer = useReducer;
-        exports.useRef = useRef2;
-        exports.useState = useState2;
+        exports.useRef = useRef3;
+        exports.useState = useState3;
         exports.useSyncExternalStore = useSyncExternalStore;
         exports.useTransition = useTransition;
         exports.version = ReactVersion;
@@ -2393,9 +2393,9 @@ var require_react_dom_development = __commonJS({
         if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
         }
-        var React3 = require_react();
+        var React6 = require_react();
         var Scheduler = require_scheduler();
-        var ReactSharedInternals = React3.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React6.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         var suppressWarning = false;
         function setSuppressWarning(newSuppressWarning) {
           {
@@ -4000,7 +4000,7 @@ var require_react_dom_development = __commonJS({
           {
             if (props.value == null) {
               if (typeof props.children === "object" && props.children !== null) {
-                React3.Children.forEach(props.children, function(child) {
+                React6.Children.forEach(props.children, function(child) {
                   if (child == null) {
                     return;
                   }
@@ -24158,7 +24158,7 @@ var require_react_jsx_runtime_development = __commonJS({
     if (true) {
       (function() {
         "use strict";
-        var React3 = require_react();
+        var React6 = require_react();
         var REACT_ELEMENT_TYPE = Symbol.for("react.element");
         var REACT_PORTAL_TYPE = Symbol.for("react.portal");
         var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -24184,7 +24184,7 @@ var require_react_jsx_runtime_development = __commonJS({
           }
           return null;
         }
-        var ReactSharedInternals = React3.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React6.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         function error(format) {
           {
             {
@@ -25034,11 +25034,11 @@ var require_react_jsx_runtime_development = __commonJS({
             return jsxWithValidation(type, props, key, false);
           }
         }
-        var jsx3 = jsxWithValidationDynamic;
-        var jsxs2 = jsxWithValidationStatic;
+        var jsx9 = jsxWithValidationDynamic;
+        var jsxs7 = jsxWithValidationStatic;
         exports.Fragment = REACT_FRAGMENT_TYPE;
-        exports.jsx = jsx3;
-        exports.jsxs = jsxs2;
+        exports.jsx = jsx9;
+        exports.jsxs = jsxs7;
       })();
     }
   }
@@ -25062,55 +25062,411 @@ __export(main_exports, {
   default: () => NewTabPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian3 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // view.tsx
-var import_obsidian2 = require("obsidian");
-var React2 = __toESM(require_react());
+var import_obsidian5 = require("obsidian");
+var React5 = __toESM(require_react());
 var ReactDOM = __toESM(require_client());
 
 // NewTabComponent.tsx
-var React = __toESM(require_react());
-var import_obsidian = require("obsidian");
+var React4 = __toESM(require_react());
+var import_obsidian4 = require("obsidian");
 var import_fuzzysort = __toESM(require_fuzzysort());
+
+// iconUtils.ts
+var import_obsidian = require("obsidian");
+var iconCache = /* @__PURE__ */ new Map();
+async function getIconForFile(app, file) {
+  var _a, _b, _c;
+  const cacheKey = file.path + file.mtime;
+  if (iconCache.has(cacheKey)) {
+    return iconCache.get(cacheKey);
+  }
+  let result = { icon: "lucide-file", color: null };
+  try {
+    const iconic = (_a = app.plugins) == null ? void 0 : _a.getPlugin("iconic");
+    if (iconic) {
+      const pageType = file instanceof import_obsidian.TFile ? "file" : "folder";
+      const rule = (_b = iconic.ruleManager) == null ? void 0 : _b.checkRuling(pageType, file.path);
+      const fileItem = iconic.getFileItem(file.path);
+      if (rule) {
+        result = {
+          icon: rule.icon || (fileItem == null ? void 0 : fileItem.icon) || "lucide-file",
+          color: rule.color || (fileItem == null ? void 0 : fileItem.color) || null
+        };
+      } else if (fileItem) {
+        result = {
+          icon: fileItem.icon || "lucide-file",
+          color: fileItem.color || null
+        };
+      }
+    }
+  } catch (e) {
+    console.warn("New Tab: Failed to get icon from Iconic", e);
+  }
+  if (result.icon === "lucide-file") {
+    const cache = app.metadataCache.getFileCache(file);
+    if ((_c = cache == null ? void 0 : cache.frontmatter) == null ? void 0 : _c.icon) {
+      result = { icon: cache.frontmatter.icon, color: null };
+    }
+  }
+  if (result.icon === "lucide-file") {
+    if (file.extension === "pdf")
+      result.icon = "lucide-file-text";
+    else if (file.extension === "png" || file.extension === "jpg")
+      result.icon = "lucide-image";
+    else if (file.extension === "canvas")
+      result.icon = "lucide-layout-dashboard";
+  }
+  iconCache.set(cacheKey, result);
+  return result;
+}
+var ICONIC_COLORS = /* @__PURE__ */ new Map([
+  ["red", "--color-red"],
+  ["orange", "--color-orange"],
+  ["yellow", "--color-yellow"],
+  ["green", "--color-green"],
+  ["cyan", "--color-cyan"],
+  ["blue", "--color-blue"],
+  ["purple", "--color-purple"],
+  ["pink", "--color-pink"],
+  ["gray", "--color-base-70"]
+]);
+function renderIcon(app, iconName, container, color) {
+  const isEmoji = /\p{Emoji}/u.test(iconName);
+  if (isEmoji && iconName.length < 5) {
+    container.innerText = iconName;
+    container.style.fontSize = "1.5rem";
+    return;
+  }
+  (0, import_obsidian.setIcon)(container, iconName);
+  if (color) {
+    if (ICONIC_COLORS.has(color)) {
+      container.style.color = `var(${ICONIC_COLORS.get(color)})`;
+    } else {
+      container.style.color = color;
+    }
+  }
+}
+
+// components/GreetingSection.tsx
+var React = __toESM(require_react());
 var import_jsx_runtime = __toESM(require_jsx_runtime());
-var NewTabComponent = ({ app }) => {
-  const [query, setQuery] = React.useState("");
-  const [results, setResults] = React.useState([]);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const [bookmarks, setBookmarks] = React.useState([]);
-  const inputRef = React.useRef(null);
+var GreetingSection = ({ customGreeting }) => {
+  const [greeting, setGreeting] = React.useState("");
   React.useEffect(() => {
-    var _a;
+    if (customGreeting) {
+      setGreeting(customGreeting);
+      return;
+    }
+    const hour = (/* @__PURE__ */ new Date()).getHours();
+    if (hour < 12)
+      setGreeting("Good Morning");
+    else if (hour < 18)
+      setGreeting("Good Afternoon");
+    else
+      setGreeting("Good Evening");
+  }, [customGreeting]);
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "greeting-section", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: greeting }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "date-display", children: (/* @__PURE__ */ new Date()).toLocaleDateString(void 0, {
+      weekday: "long",
+      month: "long",
+      day: "numeric"
+    }) })
+  ] });
+};
+
+// components/DailyNoteWidget.tsx
+var import_obsidian2 = require("obsidian");
+
+// components/IconDisplay.tsx
+var React2 = __toESM(require_react());
+var import_jsx_runtime2 = __toESM(require_jsx_runtime());
+var IconDisplay = ({ app, iconName, color, className }) => {
+  const ref = React2.useRef(null);
+  React2.useEffect(() => {
+    if (ref.current && iconName) {
+      ref.current.empty();
+      renderIcon(app, iconName, ref.current, color);
+    }
+  }, [iconName, color, app]);
+  if (!iconName)
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: `icon-placeholder ${className || ""}`, children: "\u{1F4C4}" });
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { ref, className: `icon-render ${className || ""}` });
+};
+
+// components/DailyNoteWidget.tsx
+var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+var DailyNoteWidget = ({ app, leaf }) => {
+  const handleDailyNote = async () => {
+    var _a, _b, _c, _d;
+    try {
+      let format = "YYYY-MM-DD";
+      let folder = "";
+      const typedApp = app;
+      const dailyNotesPlugin = (_b = (_a = typedApp.internalPlugins) == null ? void 0 : _a.getPluginById("daily-notes")) == null ? void 0 : _b.instance;
+      if (dailyNotesPlugin == null ? void 0 : dailyNotesPlugin.options) {
+        format = dailyNotesPlugin.options.format || format;
+        folder = dailyNotesPlugin.options.folder || folder;
+      }
+      const periodicNotes = (_c = app.plugins) == null ? void 0 : _c.getPlugin("periodic-notes");
+      if ((_d = periodicNotes == null ? void 0 : periodicNotes.settings) == null ? void 0 : _d.daily) {
+        format = periodicNotes.settings.daily.format || format;
+        folder = periodicNotes.settings.daily.folder || folder;
+      }
+      const date = window.moment();
+      const basename = date.format(format);
+      let path = folder ? `${folder}/${basename}.md` : `${basename}.md`;
+      path = (0, import_obsidian2.normalizePath)(path);
+      const abstractFile = app.vault.getAbstractFileByPath(path);
+      let fileToOpen = abstractFile;
+      if (!fileToOpen) {
+        fileToOpen = app.metadataCache.getFirstLinkpathDest(basename, "");
+      }
+      if (fileToOpen instanceof import_obsidian2.TFile) {
+        if (leaf) {
+          await leaf.openFile(fileToOpen);
+        } else {
+          await app.workspace.getLeaf(false).openFile(fileToOpen);
+        }
+        return;
+      }
+    } catch (e) {
+      console.error("Error trying to find daily note:", e);
+    }
+    const commands = app.commands;
+    const commandIds = [
+      "daily-notes",
+      "daily-notes:today",
+      "periodic-notes:open-daily-note",
+      "periodic-notes:today"
+    ];
+    let executed = false;
+    for (const id of commandIds) {
+      if (commands.findCommand(id)) {
+        commands.executeCommandById(id);
+        executed = true;
+        break;
+      }
+    }
+    if (!executed) {
+      console.warn("Could not find a command to open the daily note.");
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "daily-note-section", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("button", { className: "daily-note-widget", onClick: handleDailyNote, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "daily-note-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(IconDisplay, { app, iconName: "calendar", className: "daily-note-icon" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "daily-note-content", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "daily-note-label", children: "Today's Note" }) })
+  ] }) });
+};
+
+// components/SearchBar.tsx
+var React3 = __toESM(require_react());
+var import_jsx_runtime4 = __toESM(require_jsx_runtime());
+var SearchBar = ({
+  app,
+  query,
+  setQuery,
+  onKeyDown,
+  resultsCount
+}) => {
+  const inputRef = React3.useRef(null);
+  React3.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-    try {
-      const bookmarksPlugin = (_a = app.internalPlugins) == null ? void 0 : _a.getPluginById("bookmarks");
-      if (bookmarksPlugin == null ? void 0 : bookmarksPlugin.enabled) {
-        const instance = bookmarksPlugin.instance;
-        const items = instance.items || (instance.getBookmarks ? instance.getBookmarks() : []);
-        const flatBookmarks = [];
-        const traverse = (items2) => {
-          for (const item of items2) {
-            if (item.type === "file") {
-              flatBookmarks.push(item);
-            } else if (item.type === "group" && item.items) {
-              traverse(item.items);
+  }, []);
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    "div",
+    {
+      className: `search-container ${query ? "has-query" : ""} ${resultsCount > 0 ? "has-results" : ""}`,
+      children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "search-input-wrapper", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          "input",
+          {
+            ref: inputRef,
+            type: "text",
+            className: "search-input",
+            placeholder: "Search your mind...",
+            value: query,
+            onChange: (e) => setQuery(e.target.value),
+            onKeyDown,
+            autoFocus: true
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "search-right-section", children: [
+          query && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+            "button",
+            {
+              className: "search-clear-btn visible",
+              onClick: () => {
+                var _a;
+                setQuery("");
+                (_a = inputRef.current) == null ? void 0 : _a.focus();
+              },
+              "aria-label": "Clear search",
+              children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconDisplay, { app, iconName: "x" })
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "search-icon-indicator", children: query ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconDisplay, { app, iconName: "corner-down-left" }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconDisplay, { app, iconName: "search" }) })
+        ] })
+      ] })
+    }
+  );
+};
+
+// components/SearchResults.tsx
+var import_jsx_runtime5 = __toESM(require_jsx_runtime());
+var SearchResults = ({
+  app,
+  results,
+  selectedIndex,
+  onSelect,
+  setSelectedIndex
+}) => {
+  if (results.length === 0)
+    return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "search-results", children: results.map((result, index) => {
+    var _a;
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+      "div",
+      {
+        className: `search-result-item ${index === selectedIndex ? "selected" : ""}`,
+        onClick: () => onSelect(result.file),
+        onMouseEnter: () => setSelectedIndex(index),
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+            IconDisplay,
+            {
+              app,
+              iconName: result.icon,
+              color: result.color,
+              className: "result-icon-el"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "result-info", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "result-name", children: result.file.basename }),
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "result-path", children: (_a = result.file.parent) == null ? void 0 : _a.path })
+          ] })
+        ]
+      },
+      result.file.path
+    );
+  }) });
+};
+
+// components/BookmarksGrid.tsx
+var import_obsidian3 = require("obsidian");
+var import_jsx_runtime6 = __toESM(require_jsx_runtime());
+var BookmarksGrid = ({
+  app,
+  bookmarks,
+  onSelect
+}) => {
+  if (bookmarks.length === 0)
+    return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmarks-section", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmarks-grid", children: bookmarks.map((b, i) => {
+    var _a;
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+      "div",
+      {
+        className: "bookmark-card",
+        onClick: () => {
+          if (b.type === "file" && b.path) {
+            const file = app.vault.getAbstractFileByPath(b.path);
+            if (file instanceof import_obsidian3.TFile) {
+              onSelect(file);
             }
           }
-        };
-        if (Array.isArray(items)) {
-          traverse(items);
-        }
-        setBookmarks(flatBookmarks.slice(0, 10));
-      }
-    } catch (e) {
-      console.error("Failed to fetch bookmarks", e);
+        },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmark-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            IconDisplay,
+            {
+              app,
+              iconName: b.icon,
+              color: b.color,
+              className: "bookmark-icon-el"
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "bookmark-title", children: b.title || (b.path ? (_a = b.path.split("/").pop()) == null ? void 0 : _a.replace(/\.[^/.]+$/, "") : "Untitled") })
+        ]
+      },
+      i
+    );
+  }) }) });
+};
+
+// NewTabComponent.tsx
+var import_jsx_runtime7 = __toESM(require_jsx_runtime());
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = React4.useState(value);
+  React4.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
+var NewTabComponent = ({ app, leaf, settings }) => {
+  const [query, setQuery] = React4.useState("");
+  const debouncedQuery = useDebounce(query, 200);
+  const [results, setResults] = React4.useState([]);
+  const [selectedIndex, setSelectedIndex] = React4.useState(0);
+  const [bookmarks, setBookmarks] = React4.useState([]);
+  React4.useEffect(() => {
+    if (!settings.showBookmarks) {
+      setBookmarks([]);
+      return;
     }
-  }, [app]);
-  React.useEffect(() => {
-    if (!query) {
+    const fetchBookmarks = async () => {
+      var _a;
+      try {
+        const typedApp = app;
+        const bookmarksPlugin = (_a = typedApp.internalPlugins) == null ? void 0 : _a.getPluginById("bookmarks");
+        if (bookmarksPlugin == null ? void 0 : bookmarksPlugin.enabled) {
+          const instance = bookmarksPlugin.instance;
+          const items = instance.items || (instance.getBookmarks ? instance.getBookmarks() : []);
+          const flatBookmarks = [];
+          const traverse = (items2) => {
+            for (const item of items2) {
+              if (item.type === "file") {
+                flatBookmarks.push(item);
+              } else if (item.type === "group" && item.items) {
+                traverse(item.items);
+              }
+            }
+          };
+          if (Array.isArray(items)) {
+            traverse(items);
+          }
+          const enriched = await Promise.all(flatBookmarks.slice(0, 10).map(async (b) => {
+            let icon = "lucide-file";
+            let color = null;
+            if (b.type === "file" && b.path) {
+              const file = app.vault.getAbstractFileByPath(b.path);
+              if (file instanceof import_obsidian4.TFile) {
+                const iconInfo = await getIconForFile(app, file);
+                icon = iconInfo.icon;
+                color = iconInfo.color;
+              }
+            }
+            return { ...b, icon, color };
+          }));
+          setBookmarks(enriched);
+        }
+      } catch (e) {
+        console.error("Failed to fetch bookmarks", e);
+      }
+    };
+    fetchBookmarks();
+  }, [app, settings.showBookmarks]);
+  React4.useEffect(() => {
+    if (!debouncedQuery) {
       setResults([]);
       return;
     }
@@ -25120,98 +25476,91 @@ var NewTabComponent = ({ app }) => {
       path: f.path,
       name: f.basename
     }));
-    const results2 = import_fuzzysort.default.go(query, targets, {
+    const searchResults = import_fuzzysort.default.go(debouncedQuery, targets, {
       key: "path",
       limit: 10,
       threshold: -1e4
     });
-    setResults(results2.map((r) => ({
-      file: r.obj.file,
-      score: r.score,
-      highlightIndexes: import_fuzzysort.default.indexes(r)
-    })));
-    setSelectedIndex(0);
-  }, [query, app.vault]);
+    const processResults = async () => {
+      const mapped = await Promise.all(searchResults.map(async (r) => {
+        const iconInfo = await getIconForFile(app, r.obj.file);
+        return {
+          file: r.obj.file,
+          score: r.score,
+          icon: iconInfo.icon,
+          color: iconInfo.color
+        };
+      }));
+      setResults(mapped);
+      setSelectedIndex(0);
+    };
+    processResults();
+  }, [debouncedQuery, app.vault]);
   const openFile = (file) => {
-    app.workspace.getLeaf(false).openFile(file);
+    if (leaf) {
+      leaf.openFile(file);
+    } else {
+      app.workspace.getLeaf(false).openFile(file);
+    }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "new-tab-wrapper", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "search-container", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-      "input",
-      {
-        ref: inputRef,
-        type: "text",
-        className: "search-input",
-        placeholder: "Search notes...",
-        value: query,
-        onChange: (e) => setQuery(e.target.value),
-        onKeyDown: (e) => {
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setResults((prev) => {
-              return prev;
-            });
-            setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
-          } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            setSelectedIndex((prev) => Math.max(prev - 1, 0));
-          } else if (e.key === "Enter") {
-            e.preventDefault();
-            if (results[selectedIndex]) {
-              openFile(results[selectedIndex].file);
-            }
-          }
-        }
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (results[selectedIndex]) {
+        openFile(results[selectedIndex].file);
       }
-    ) }),
-    results.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "search-results", children: results.map((result, index) => {
-      var _a;
-      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-        "div",
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "new-tab-wrapper", children: [
+    app.isMobile && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "mobile-ui-spacer" }),
+    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(GreetingSection, { customGreeting: settings.customGreeting }),
+    !query && settings.showDailyNote && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(DailyNoteWidget, { app, leaf }),
+    /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "search-group", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+        SearchBar,
         {
-          className: `search-result-item ${index === selectedIndex ? "selected" : ""}`,
-          onClick: () => openFile(result.file),
-          onMouseEnter: () => setSelectedIndex(index),
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "result-icon", children: "\u{1F4C4}" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "result-name", children: result.file.basename }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "result-path", children: (_a = result.file.parent) == null ? void 0 : _a.path })
-          ]
-        },
-        result.file.path
-      );
-    }) }) : !query && bookmarks.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bookmarks-container", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Bookmarks" }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bookmarks-grid", children: bookmarks.map((b, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-        "div",
+          app,
+          query,
+          setQuery,
+          onKeyDown: handleKeyDown,
+          resultsCount: results.length
+        }
+      ),
+      results.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+        SearchResults,
         {
-          className: "bookmark-item",
-          onClick: () => {
-            if (b.type === "file" && b.path) {
-              const file = app.vault.getAbstractFileByPath(b.path);
-              if (file instanceof import_obsidian.TFile) {
-                openFile(file);
-              }
-            }
-          },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "bookmark-icon", children: b.type === "file" ? "\u{1F4C4}" : "\u2B50" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "bookmark-title", children: b.title || (b.path ? b.path.split("/").pop() : "Untitled") })
-          ]
-        },
-        i
-      )) })
+          app,
+          results,
+          selectedIndex,
+          onSelect: openFile,
+          setSelectedIndex
+        }
+      ) : !query && settings.showBookmarks && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+        BookmarksGrid,
+        {
+          app,
+          bookmarks,
+          onSelect: openFile
+        }
+      )
     ] })
   ] });
 };
 
 // view.tsx
-var import_jsx_runtime2 = __toESM(require_jsx_runtime());
+var import_jsx_runtime8 = __toESM(require_jsx_runtime());
 var NEW_TAB_VIEW_TYPE = "new-tab-search-view";
-var NewTabView = class extends import_obsidian2.ItemView {
-  constructor(leaf) {
+var NewTabView = class extends import_obsidian5.ItemView {
+  constructor(leaf, plugin) {
     super(leaf);
     this.root = null;
+    this.plugin = plugin;
   }
   getViewType() {
     return NEW_TAB_VIEW_TYPE;
@@ -25219,29 +25568,85 @@ var NewTabView = class extends import_obsidian2.ItemView {
   getDisplayText() {
     return "New Tab";
   }
+  getIcon() {
+    return "search";
+  }
   async onOpen() {
-    const container = this.containerEl.children[1];
+    const container = this.contentEl;
     container.empty();
     container.addClass("new-tab-search-container");
+    container.addClass("new-tab-page-view");
     this.root = ReactDOM.createRoot(container);
     this.root.render(
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(React2.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(NewTabComponent, { app: this.app }) })
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(React5.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
     );
+  }
+  refresh() {
+    if (this.root) {
+      this.root.render(
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(React5.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
+      );
+    }
   }
   async onClose() {
     if (this.root) {
       this.root.unmount();
+      this.root = null;
     }
   }
 };
 
+// types.ts
+var DEFAULT_SETTINGS = {
+  showDailyNote: true,
+  customGreeting: "",
+  showBookmarks: true
+};
+
+// settings.ts
+var import_obsidian6 = require("obsidian");
+var NewTabSettingTab = class extends import_obsidian6.PluginSettingTab {
+  constructor(app, plugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
+  display() {
+    const { containerEl } = this;
+    containerEl.empty();
+    new import_obsidian6.Setting(containerEl).setName("Custom Greeting").setDesc("Leave empty to use time-based greeting (Good Morning, etc.)").addText(
+      (text) => text.setPlaceholder("Hello!").setValue(this.plugin.settings.customGreeting).onChange(async (value) => {
+        this.plugin.settings.customGreeting = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian6.Setting(containerEl).setName("Show Daily Note Widget").setDesc("Show a button to quickly open today's daily note.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.showDailyNote).onChange(async (value) => {
+        this.plugin.settings.showDailyNote = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian6.Setting(containerEl).setName("Show Bookmarks").setDesc("Show your bookmarked files when search is empty.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.showBookmarks).onChange(async (value) => {
+        this.plugin.settings.showBookmarks = value;
+        await this.plugin.saveSettings();
+      })
+    );
+  }
+};
+
 // main.ts
-var NewTabPlugin = class extends import_obsidian3.Plugin {
+var NewTabPlugin = class extends import_obsidian7.Plugin {
+  constructor() {
+    super(...arguments);
+    this.settings = DEFAULT_SETTINGS;
+  }
   async onload() {
+    await this.loadSettings();
     this.registerView(
       NEW_TAB_VIEW_TYPE,
-      (leaf) => new NewTabView(leaf)
+      (leaf) => new NewTabView(leaf, this)
     );
+    this.addSettingTab(new NewTabSettingTab(this.app, this));
     this.addCommand({
       id: "open-new-tab-page",
       name: "Open New Tab Page",
@@ -25252,25 +25657,48 @@ var NewTabPlugin = class extends import_obsidian3.Plugin {
     this.addRibbonIcon("search", "Open New Tab Search", () => {
       this.activateView();
     });
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", (leaf) => {
+        if (leaf) {
+          if (leaf.view.getViewType() === "empty") {
+            this.activateView(leaf);
+          }
+        }
+      })
+    );
   }
   onunload() {
   }
-  async activateView() {
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+  async saveSettings() {
+    await this.saveData(this.settings);
+    this.app.workspace.getLeavesOfType(NEW_TAB_VIEW_TYPE).forEach((leaf) => {
+      if (leaf.view instanceof NewTabView) {
+        leaf.view.refresh();
+      }
+    });
+  }
+  /**
+   * Activates the view. If a leaf is provided, uses that leaf.
+   * Otherwise tries to find existing or create new.
+   */
+  async activateView(leaf) {
     const { workspace } = this.app;
-    let leaf = null;
-    const leaves = workspace.getLeavesOfType(NEW_TAB_VIEW_TYPE);
-    if (leaves.length > 0) {
-      leaf = leaves[0];
-    } else {
-      leaf = workspace.getLeaf(true);
+    if (!leaf) {
+      const leaves = workspace.getLeavesOfType(NEW_TAB_VIEW_TYPE);
+      if (leaves.length > 0) {
+        leaf = leaves[0];
+      } else {
+        leaf = workspace.getLeaf(true);
+      }
     }
-    if (leaf) {
-      await leaf.setViewState({
-        type: NEW_TAB_VIEW_TYPE,
-        active: true
-      });
-      workspace.revealLeaf(leaf);
-    }
+    await leaf.setViewState({
+      type: NEW_TAB_VIEW_TYPE,
+      active: true
+    });
+    workspace.revealLeaf(leaf);
   }
 };
 /*! Bundled license information:
