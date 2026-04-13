@@ -1,11 +1,16 @@
 import { App, TFile, setIcon } from "obsidian";
+import { IconInfo } from "./types";
 
-export interface IconInfo {
-    icon: string;
-    color: string | null;
-}
+const iconCache = new Map<string, IconInfo>();
 
 export async function getIconForFile(app: App, file: TFile): Promise<IconInfo> {
+    const cacheKey = file.path + (file as any).mtime; // Use path and modification time as key
+    if (iconCache.has(cacheKey)) {
+        return iconCache.get(cacheKey)!;
+    }
+
+    let result: IconInfo = { icon: "lucide-file", color: null };
+
     // 1. Try Iconic Plugin (Internal API)
     try {
         const iconic = (app as any).plugins?.getPlugin("iconic");
@@ -19,15 +24,13 @@ export async function getIconForFile(app: App, file: TFile): Promise<IconInfo> {
 
             // Rule takes precedence if it exists
             if (rule) {
-                return {
+                result = {
                     icon: rule.icon || fileItem?.icon || "lucide-file",
                     color: rule.color || fileItem?.color || null
                 };
-            }
-
-            // Then checks manual overrides on the file itself
-            if (fileItem) {
-                return {
+            } else if (fileItem) {
+                // Then checks manual overrides on the file itself
+                result = {
                     icon: fileItem.icon || "lucide-file",
                     color: fileItem.color || null
                 };
@@ -37,19 +40,23 @@ export async function getIconForFile(app: App, file: TFile): Promise<IconInfo> {
         console.warn("New Tab: Failed to get icon from Iconic", e);
     }
 
-    // 2. Frontmatter 'icon' property
-    const cache = app.metadataCache.getFileCache(file);
-    if (cache?.frontmatter?.icon) {
-        return { icon: cache.frontmatter.icon, color: null };
+    // 2. Frontmatter 'icon' property if no Iconic icon
+    if (result.icon === "lucide-file") {
+        const cache = app.metadataCache.getFileCache(file);
+        if (cache?.frontmatter?.icon) {
+            result = { icon: cache.frontmatter.icon, color: null };
+        }
     }
 
     // 3. Default based on file type (basic)
-    let defaultIcon = "lucide-file";
-    if (file.extension === "pdf") defaultIcon = "lucide-file-text";
-    else if (file.extension === "png" || file.extension === "jpg") defaultIcon = "lucide-image";
-    else if (file.extension === "canvas") defaultIcon = "lucide-layout-dashboard";
+    if (result.icon === "lucide-file") {
+        if (file.extension === "pdf") result.icon = "lucide-file-text";
+        else if (file.extension === "png" || file.extension === "jpg") result.icon = "lucide-image";
+        else if (file.extension === "canvas") result.icon = "lucide-layout-dashboard";
+    }
 
-    return { icon: defaultIcon, color: null };
+    iconCache.set(cacheKey, result);
+    return result;
 }
 
 // Helper to render icon into an element
