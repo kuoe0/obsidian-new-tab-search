@@ -1094,7 +1094,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher.useContext(Context);
         }
-        function useState3(initialState) {
+        function useState4(initialState) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useState(initialState);
         }
@@ -1106,7 +1106,7 @@ var require_react_development = __commonJS({
           var dispatcher = resolveDispatcher();
           return dispatcher.useRef(initialValue);
         }
-        function useEffect5(create, deps) {
+        function useEffect6(create, deps) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useEffect(create, deps);
         }
@@ -1889,7 +1889,7 @@ var require_react_development = __commonJS({
         exports.useContext = useContext;
         exports.useDebugValue = useDebugValue;
         exports.useDeferredValue = useDeferredValue;
-        exports.useEffect = useEffect5;
+        exports.useEffect = useEffect6;
         exports.useId = useId;
         exports.useImperativeHandle = useImperativeHandle;
         exports.useInsertionEffect = useInsertionEffect;
@@ -1897,7 +1897,7 @@ var require_react_development = __commonJS({
         exports.useMemo = useMemo;
         exports.useReducer = useReducer;
         exports.useRef = useRef3;
-        exports.useState = useState3;
+        exports.useState = useState4;
         exports.useSyncExternalStore = useSyncExternalStore;
         exports.useTransition = useTransition;
         exports.version = ReactVersion;
@@ -2393,9 +2393,9 @@ var require_react_dom_development = __commonJS({
         if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
         }
-        var React6 = require_react();
+        var React7 = require_react();
         var Scheduler = require_scheduler();
-        var ReactSharedInternals = React6.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React7.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         var suppressWarning = false;
         function setSuppressWarning(newSuppressWarning) {
           {
@@ -2444,7 +2444,7 @@ var require_react_dom_development = __commonJS({
         var HostPortal = 4;
         var HostComponent = 5;
         var HostText = 6;
-        var Fragment = 7;
+        var Fragment3 = 7;
         var Mode = 8;
         var ContextConsumer = 9;
         var ContextProvider = 10;
@@ -3600,7 +3600,7 @@ var require_react_dom_development = __commonJS({
               return "DehydratedFragment";
             case ForwardRef:
               return getWrappedName$1(type, type.render, "ForwardRef");
-            case Fragment:
+            case Fragment3:
               return "Fragment";
             case HostComponent:
               return type;
@@ -4000,7 +4000,7 @@ var require_react_dom_development = __commonJS({
           {
             if (props.value == null) {
               if (typeof props.children === "object" && props.children !== null) {
-                React6.Children.forEach(props.children, function(child) {
+                React7.Children.forEach(props.children, function(child) {
                   if (child == null) {
                     return;
                   }
@@ -12001,7 +12001,7 @@ var require_react_dom_development = __commonJS({
             }
           }
           function updateFragment2(returnFiber, current2, fragment, lanes, key) {
-            if (current2 === null || current2.tag !== Fragment) {
+            if (current2 === null || current2.tag !== Fragment3) {
               var created = createFiberFromFragment(fragment, returnFiber.mode, lanes, key);
               created.return = returnFiber;
               return created;
@@ -12404,7 +12404,7 @@ var require_react_dom_development = __commonJS({
               if (child.key === key) {
                 var elementType = element.type;
                 if (elementType === REACT_FRAGMENT_TYPE) {
-                  if (child.tag === Fragment) {
+                  if (child.tag === Fragment3) {
                     deleteRemainingChildren(returnFiber, child.sibling);
                     var existing = useFiber(child, element.props.children);
                     existing.return = returnFiber;
@@ -17881,7 +17881,7 @@ var require_react_dom_development = __commonJS({
               var _resolvedProps2 = workInProgress2.elementType === type ? _unresolvedProps2 : resolveDefaultProps(type, _unresolvedProps2);
               return updateForwardRef(current2, workInProgress2, type, _resolvedProps2, renderLanes2);
             }
-            case Fragment:
+            case Fragment3:
               return updateFragment(current2, workInProgress2, renderLanes2);
             case Mode:
               return updateMode(current2, workInProgress2, renderLanes2);
@@ -18154,7 +18154,7 @@ var require_react_dom_development = __commonJS({
             case SimpleMemoComponent:
             case FunctionComponent:
             case ForwardRef:
-            case Fragment:
+            case Fragment3:
             case Mode:
             case Profiler:
             case ContextConsumer:
@@ -22413,7 +22413,7 @@ var require_react_dom_development = __commonJS({
           return fiber;
         }
         function createFiberFromFragment(elements, mode, lanes, key) {
-          var fiber = createFiber(Fragment, elements, key, mode);
+          var fiber = createFiber(Fragment3, elements, key, mode);
           fiber.lanes = lanes;
           return fiber;
         }
@@ -24158,7 +24158,7 @@ var require_react_jsx_runtime_development = __commonJS({
     if (true) {
       (function() {
         "use strict";
-        var React6 = require_react();
+        var React7 = require_react();
         var REACT_ELEMENT_TYPE = Symbol.for("react.element");
         var REACT_PORTAL_TYPE = Symbol.for("react.portal");
         var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -24184,7 +24184,7 @@ var require_react_jsx_runtime_development = __commonJS({
           }
           return null;
         }
-        var ReactSharedInternals = React6.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React7.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         function error(format) {
           {
             {
@@ -25034,11 +25034,11 @@ var require_react_jsx_runtime_development = __commonJS({
             return jsxWithValidation(type, props, key, false);
           }
         }
-        var jsx9 = jsxWithValidationDynamic;
-        var jsxs7 = jsxWithValidationStatic;
+        var jsx10 = jsxWithValidationDynamic;
+        var jsxs8 = jsxWithValidationStatic;
         exports.Fragment = REACT_FRAGMENT_TYPE;
-        exports.jsx = jsx9;
-        exports.jsxs = jsxs7;
+        exports.jsx = jsx10;
+        exports.jsxs = jsxs8;
       })();
     }
   }
@@ -25066,11 +25066,11 @@ var import_obsidian7 = require("obsidian");
 
 // view.tsx
 var import_obsidian5 = require("obsidian");
-var React5 = __toESM(require_react());
+var React6 = __toESM(require_react());
 var ReactDOM = __toESM(require_client());
 
 // NewTabComponent.tsx
-var React4 = __toESM(require_react());
+var React5 = __toESM(require_react());
 var import_obsidian4 = require("obsidian");
 var import_fuzzysort = __toESM(require_fuzzysort());
 
@@ -25366,7 +25366,7 @@ var BookmarksGrid = ({
 }) => {
   if (bookmarks.length === 0)
     return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmarks-section", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmarks-grid", children: bookmarks.map((b, i) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmarks-grid", children: bookmarks.map((b, i) => {
     var _a;
     return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
       "div",
@@ -25395,14 +25395,66 @@ var BookmarksGrid = ({
       },
       i
     );
-  }) }) });
+  }) });
+};
+
+// components/RecentFilesGrid.tsx
+var React4 = __toESM(require_react());
+var import_jsx_runtime7 = __toESM(require_jsx_runtime());
+var RecentFilesGrid = ({
+  app,
+  recentFiles,
+  onSelect
+}) => {
+  const [enrichedFiles, setEnrichedFiles] = React4.useState([]);
+  React4.useEffect(() => {
+    const enrichFiles = async () => {
+      const enriched = await Promise.all(
+        recentFiles.map(async (file) => {
+          const iconInfo = await getIconForFile(app, file);
+          return {
+            file,
+            icon: iconInfo.icon,
+            color: iconInfo.color
+          };
+        })
+      );
+      setEnrichedFiles(enriched);
+    };
+    enrichFiles();
+  }, [app, recentFiles]);
+  if (enrichedFiles.length === 0)
+    return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_jsx_runtime7.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h3", { className: "section-title", children: "Recent Files" }),
+    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "bookmarks-grid", children: enrichedFiles.map((item) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+      "div",
+      {
+        className: "bookmark-card",
+        onClick: () => onSelect(item.file),
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "bookmark-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+            IconDisplay,
+            {
+              app,
+              iconName: item.icon,
+              color: item.color,
+              className: "bookmark-icon-el"
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "bookmark-title", children: item.file.basename })
+        ]
+      },
+      item.file.path
+    )) })
+  ] });
 };
 
 // NewTabComponent.tsx
-var import_jsx_runtime7 = __toESM(require_jsx_runtime());
+var import_jsx_runtime8 = __toESM(require_jsx_runtime());
 function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = React4.useState(value);
-  React4.useEffect(() => {
+  const [debouncedValue, setDebouncedValue] = React5.useState(value);
+  React5.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
@@ -25413,12 +25465,22 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 var NewTabComponent = ({ app, leaf, settings }) => {
-  const [query, setQuery] = React4.useState("");
+  const [query, setQuery] = React5.useState("");
   const debouncedQuery = useDebounce(query, 200);
-  const [results, setResults] = React4.useState([]);
-  const [selectedIndex, setSelectedIndex] = React4.useState(0);
-  const [bookmarks, setBookmarks] = React4.useState([]);
-  React4.useEffect(() => {
+  const [results, setResults] = React5.useState([]);
+  const [selectedIndex, setSelectedIndex] = React5.useState(0);
+  const [bookmarks, setBookmarks] = React5.useState([]);
+  const [recentFiles, setRecentFiles] = React5.useState([]);
+  React5.useEffect(() => {
+    if (!settings.showRecentFiles) {
+      setRecentFiles([]);
+      return;
+    }
+    const lastFiles = app.workspace.getLastOpenFiles();
+    const files = lastFiles.map((path) => app.vault.getAbstractFileByPath(path)).filter((file) => file instanceof import_obsidian4.TFile).slice(0, 4);
+    setRecentFiles(files);
+  }, [app, settings.showRecentFiles]);
+  React5.useEffect(() => {
     if (!settings.showBookmarks) {
       setBookmarks([]);
       return;
@@ -25465,7 +25527,7 @@ var NewTabComponent = ({ app, leaf, settings }) => {
     };
     fetchBookmarks();
   }, [app, settings.showBookmarks]);
-  React4.useEffect(() => {
+  React5.useEffect(() => {
     if (!debouncedQuery) {
       setResults([]);
       return;
@@ -25517,12 +25579,12 @@ var NewTabComponent = ({ app, leaf, settings }) => {
       }
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "new-tab-wrapper", children: [
-    app.isMobile && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "mobile-ui-spacer" }),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(GreetingSection, { customGreeting: settings.customGreeting }),
-    !query && settings.showDailyNote && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(DailyNoteWidget, { app, leaf }),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "search-group", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "new-tab-wrapper", children: [
+    app.isMobile && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "mobile-ui-spacer" }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(GreetingSection, { customGreeting: settings.customGreeting }),
+    !query && settings.showDailyNote && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DailyNoteWidget, { app, leaf }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "search-group", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
         SearchBar,
         {
           app,
@@ -25532,7 +25594,7 @@ var NewTabComponent = ({ app, leaf, settings }) => {
           resultsCount: results.length
         }
       ),
-      results.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+      results.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
         SearchResults,
         {
           app,
@@ -25541,20 +25603,33 @@ var NewTabComponent = ({ app, leaf, settings }) => {
           onSelect: openFile,
           setSelectedIndex
         }
-      ) : !query && settings.showBookmarks && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-        BookmarksGrid,
-        {
-          app,
-          bookmarks,
-          onSelect: openFile
-        }
-      )
+      ) : !query && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "bookmarks-section", children: [
+        settings.showRecentFiles && recentFiles.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          RecentFilesGrid,
+          {
+            app,
+            recentFiles,
+            onSelect: openFile
+          }
+        ),
+        settings.showBookmarks && bookmarks.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("h3", { className: "section-title", children: "Bookmarks" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            BookmarksGrid,
+            {
+              app,
+              bookmarks,
+              onSelect: openFile
+            }
+          )
+        ] })
+      ] })
     ] })
   ] });
 };
 
 // view.tsx
-var import_jsx_runtime8 = __toESM(require_jsx_runtime());
+var import_jsx_runtime9 = __toESM(require_jsx_runtime());
 var NEW_TAB_VIEW_TYPE = "new-tab-search-view";
 var NewTabView = class extends import_obsidian5.ItemView {
   constructor(leaf, plugin) {
@@ -25578,13 +25653,13 @@ var NewTabView = class extends import_obsidian5.ItemView {
     container.addClass("new-tab-page-view");
     this.root = ReactDOM.createRoot(container);
     this.root.render(
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(React5.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(React6.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
     );
   }
   refresh() {
     if (this.root) {
       this.root.render(
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(React5.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(React6.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
       );
     }
   }
@@ -25600,7 +25675,8 @@ var NewTabView = class extends import_obsidian5.ItemView {
 var DEFAULT_SETTINGS = {
   showDailyNote: true,
   customGreeting: "",
-  showBookmarks: true
+  showBookmarks: true,
+  showRecentFiles: true
 };
 
 // settings.ts
@@ -25628,6 +25704,12 @@ var NewTabSettingTab = class extends import_obsidian6.PluginSettingTab {
     new import_obsidian6.Setting(containerEl).setName("Show Bookmarks").setDesc("Show your bookmarked files when search is empty.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showBookmarks).onChange(async (value) => {
         this.plugin.settings.showBookmarks = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian6.Setting(containerEl).setName("Show Recent Files").setDesc("Show your recently opened files when search is empty.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.showRecentFiles).onChange(async (value) => {
+        this.plugin.settings.showRecentFiles = value;
         await this.plugin.saveSettings();
       })
     );
