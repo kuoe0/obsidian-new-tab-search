@@ -1,19 +1,19 @@
 import * as React from "react";
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { BookmarkItem } from "../types";
 import { IconDisplay } from "./IconDisplay";
+import { useAppContext } from "../context";
 
 interface BookmarksGridProps {
-  app: App;
   bookmarks: BookmarkItem[];
   onSelect: (file: TFile) => void;
 }
 
 export const BookmarksGrid: React.FC<BookmarksGridProps> = ({
-  app,
   bookmarks,
   onSelect,
 }) => {
+  const { app } = useAppContext();
   if (bookmarks.length === 0) return null;
 
   return (
@@ -33,7 +33,6 @@ export const BookmarksGrid: React.FC<BookmarksGridProps> = ({
         >
           <div className="bookmark-icon-container">
             <IconDisplay
-              app={app}
               iconName={b.icon}
               color={b.color}
               className="bookmark-icon-el"

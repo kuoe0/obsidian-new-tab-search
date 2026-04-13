@@ -1,15 +1,15 @@
 import * as React from "react";
-import { App } from "obsidian";
 import { renderIcon } from "../iconUtils";
+import { useAppContext } from "../context";
 
 interface IconDisplayProps {
-  app: App;
   iconName?: string;
   color?: string | null;
   className?: string;
 }
 
-export const IconDisplay: React.FC<IconDisplayProps> = ({ app, iconName, color, className }) => {
+export const IconDisplay: React.FC<IconDisplayProps> = ({ iconName, color, className }) => {
+  const { app } = useAppContext();
   const ref = React.useRef<HTMLSpanElement>(null);
 
   React.useEffect(() => {

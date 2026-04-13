@@ -794,7 +794,7 @@ var require_react_development = __commonJS({
           }
           return children;
         }
-        function createContext(defaultValue) {
+        function createContext2(defaultValue) {
           var context = {
             $$typeof: REACT_CONTEXT_TYPE,
             // As a workaround to support multiple concurrent renderers, we categorize
@@ -1080,7 +1080,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher;
         }
-        function useContext(Context) {
+        function useContext2(Context) {
           var dispatcher = resolveDispatcher();
           {
             if (Context._context !== void 0) {
@@ -1875,7 +1875,7 @@ var require_react_development = __commonJS({
         exports.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactSharedInternals;
         exports.act = act;
         exports.cloneElement = cloneElement$1;
-        exports.createContext = createContext;
+        exports.createContext = createContext2;
         exports.createElement = createElement$1;
         exports.createFactory = createFactory;
         exports.createRef = createRef;
@@ -1886,7 +1886,7 @@ var require_react_development = __commonJS({
         exports.startTransition = startTransition;
         exports.unstable_act = act;
         exports.useCallback = useCallback;
-        exports.useContext = useContext;
+        exports.useContext = useContext2;
         exports.useDebugValue = useDebugValue;
         exports.useDeferredValue = useDeferredValue;
         exports.useEffect = useEffect6;
@@ -2393,9 +2393,9 @@ var require_react_dom_development = __commonJS({
         if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
         }
-        var React7 = require_react();
+        var React8 = require_react();
         var Scheduler = require_scheduler();
-        var ReactSharedInternals = React7.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React8.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         var suppressWarning = false;
         function setSuppressWarning(newSuppressWarning) {
           {
@@ -4000,7 +4000,7 @@ var require_react_dom_development = __commonJS({
           {
             if (props.value == null) {
               if (typeof props.children === "object" && props.children !== null) {
-                React7.Children.forEach(props.children, function(child) {
+                React8.Children.forEach(props.children, function(child) {
                   if (child == null) {
                     return;
                   }
@@ -24158,7 +24158,7 @@ var require_react_jsx_runtime_development = __commonJS({
     if (true) {
       (function() {
         "use strict";
-        var React7 = require_react();
+        var React8 = require_react();
         var REACT_ELEMENT_TYPE = Symbol.for("react.element");
         var REACT_PORTAL_TYPE = Symbol.for("react.portal");
         var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -24184,7 +24184,7 @@ var require_react_jsx_runtime_development = __commonJS({
           }
           return null;
         }
-        var ReactSharedInternals = React7.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React8.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         function error(format) {
           {
             {
@@ -25034,10 +25034,10 @@ var require_react_jsx_runtime_development = __commonJS({
             return jsxWithValidation(type, props, key, false);
           }
         }
-        var jsx10 = jsxWithValidationDynamic;
+        var jsx11 = jsxWithValidationDynamic;
         var jsxs8 = jsxWithValidationStatic;
         exports.Fragment = REACT_FRAGMENT_TYPE;
-        exports.jsx = jsx10;
+        exports.jsx = jsx11;
         exports.jsxs = jsxs8;
       })();
     }
@@ -25066,22 +25066,26 @@ var import_obsidian7 = require("obsidian");
 
 // view.tsx
 var import_obsidian5 = require("obsidian");
-var React6 = __toESM(require_react());
+var React7 = __toESM(require_react());
 var ReactDOM = __toESM(require_client());
 
 // NewTabComponent.tsx
-var React5 = __toESM(require_react());
+var React6 = __toESM(require_react());
 var import_obsidian4 = require("obsidian");
 var import_fuzzysort = __toESM(require_fuzzysort());
 
 // iconUtils.ts
 var import_obsidian = require("obsidian");
 var iconCache = /* @__PURE__ */ new Map();
+var MAX_CACHE_SIZE = 500;
 async function getIconForFile(app, file) {
   var _a, _b, _c;
   const cacheKey = file.path + file.mtime;
   if (iconCache.has(cacheKey)) {
-    return iconCache.get(cacheKey);
+    const info = iconCache.get(cacheKey);
+    iconCache.delete(cacheKey);
+    iconCache.set(cacheKey, info);
+    return info;
   }
   let result = { icon: "lucide-file", color: null };
   try {
@@ -25118,6 +25122,11 @@ async function getIconForFile(app, file) {
       result.icon = "lucide-image";
     else if (file.extension === "canvas")
       result.icon = "lucide-layout-dashboard";
+  }
+  if (iconCache.size >= MAX_CACHE_SIZE) {
+    const firstKey = iconCache.keys().next().value;
+    if (firstKey)
+      iconCache.delete(firstKey);
   }
   iconCache.set(cacheKey, result);
   return result;
@@ -25182,24 +25191,43 @@ var GreetingSection = ({ customGreeting }) => {
 var import_obsidian2 = require("obsidian");
 
 // components/IconDisplay.tsx
+var React3 = __toESM(require_react());
+
+// context.tsx
 var React2 = __toESM(require_react());
 var import_jsx_runtime2 = __toESM(require_jsx_runtime());
-var IconDisplay = ({ app, iconName, color, className }) => {
-  const ref = React2.useRef(null);
-  React2.useEffect(() => {
+var AppContext = React2.createContext(void 0);
+var AppProvider = ({ app, settings, leaf, children }) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(AppContext.Provider, { value: { app, settings, leaf }, children });
+};
+var useAppContext = () => {
+  const context = React2.useContext(AppContext);
+  if (context === void 0) {
+    throw new Error("useAppContext must be used within an AppProvider");
+  }
+  return context;
+};
+
+// components/IconDisplay.tsx
+var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+var IconDisplay = ({ iconName, color, className }) => {
+  const { app } = useAppContext();
+  const ref = React3.useRef(null);
+  React3.useEffect(() => {
     if (ref.current && iconName) {
       ref.current.empty();
       renderIcon(app, iconName, ref.current, color);
     }
   }, [iconName, color, app]);
   if (!iconName)
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: `icon-placeholder ${className || ""}`, children: "\u{1F4C4}" });
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { ref, className: `icon-render ${className || ""}` });
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: `icon-placeholder ${className || ""}`, children: "\u{1F4C4}" });
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { ref, className: `icon-render ${className || ""}` });
 };
 
 // components/DailyNoteWidget.tsx
-var import_jsx_runtime3 = __toESM(require_jsx_runtime());
-var DailyNoteWidget = ({ app, leaf }) => {
+var import_jsx_runtime4 = __toESM(require_jsx_runtime());
+var DailyNoteWidget = () => {
+  const { app, leaf } = useAppContext();
   const handleDailyNote = async () => {
     var _a, _b, _c, _d;
     try {
@@ -25255,34 +25283,34 @@ var DailyNoteWidget = ({ app, leaf }) => {
       console.warn("Could not find a command to open the daily note.");
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "daily-note-section", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("button", { className: "daily-note-widget", onClick: handleDailyNote, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "daily-note-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(IconDisplay, { app, iconName: "calendar", className: "daily-note-icon" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "daily-note-content", children: /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { className: "daily-note-label", children: "Today's Note" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "daily-note-section", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { className: "daily-note-widget", onClick: handleDailyNote, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "daily-note-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconDisplay, { iconName: "calendar", className: "daily-note-icon" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "daily-note-content", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "daily-note-label", children: "Today's Note" }) })
   ] }) });
 };
 
 // components/SearchBar.tsx
-var React3 = __toESM(require_react());
-var import_jsx_runtime4 = __toESM(require_jsx_runtime());
+var React4 = __toESM(require_react());
+var import_jsx_runtime5 = __toESM(require_jsx_runtime());
 var SearchBar = ({
-  app,
   query,
   setQuery,
   onKeyDown,
   resultsCount
 }) => {
-  const inputRef = React3.useRef(null);
-  React3.useEffect(() => {
+  const { app } = useAppContext();
+  const inputRef = React4.useRef(null);
+  React4.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       className: `search-container ${query ? "has-query" : ""} ${resultsCount > 0 ? "has-results" : ""}`,
-      children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "search-input-wrapper", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "search-input-wrapper", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
           "input",
           {
             ref: inputRef,
@@ -25295,8 +25323,8 @@ var SearchBar = ({
             autoFocus: true
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "search-right-section", children: [
-          query && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "search-right-section", children: [
+          query && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
             "button",
             {
               className: "search-clear-btn visible",
@@ -25306,10 +25334,10 @@ var SearchBar = ({
                 (_a = inputRef.current) == null ? void 0 : _a.focus();
               },
               "aria-label": "Clear search",
-              children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconDisplay, { app, iconName: "x" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(IconDisplay, { iconName: "x" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "search-icon-indicator", children: query ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconDisplay, { app, iconName: "corner-down-left" }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconDisplay, { app, iconName: "search" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "search-icon-indicator", children: query ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(IconDisplay, { iconName: "corner-down-left" }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(IconDisplay, { iconName: "search" }) })
         ] })
       ] })
     }
@@ -25317,37 +25345,36 @@ var SearchBar = ({
 };
 
 // components/SearchResults.tsx
-var import_jsx_runtime5 = __toESM(require_jsx_runtime());
+var import_jsx_runtime6 = __toESM(require_jsx_runtime());
 var SearchResults = ({
-  app,
   results,
   selectedIndex,
   onSelect,
   setSelectedIndex
 }) => {
+  const { app } = useAppContext();
   if (results.length === 0)
     return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "search-results", children: results.map((result, index) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "search-results", children: results.map((result, index) => {
     var _a;
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
       "div",
       {
         className: `search-result-item ${index === selectedIndex ? "selected" : ""}`,
         onClick: () => onSelect(result.file),
         onMouseEnter: () => setSelectedIndex(index),
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
             IconDisplay,
             {
-              app,
               iconName: result.icon,
               color: result.color,
               className: "result-icon-el"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "result-info", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "result-name", children: result.file.basename }),
-            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "result-path", children: (_a = result.file.parent) == null ? void 0 : _a.path })
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "result-info", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "result-name", children: result.file.basename }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "result-path", children: (_a = result.file.parent) == null ? void 0 : _a.path })
           ] })
         ]
       },
@@ -25358,17 +25385,17 @@ var SearchResults = ({
 
 // components/BookmarksGrid.tsx
 var import_obsidian3 = require("obsidian");
-var import_jsx_runtime6 = __toESM(require_jsx_runtime());
+var import_jsx_runtime7 = __toESM(require_jsx_runtime());
 var BookmarksGrid = ({
-  app,
   bookmarks,
   onSelect
 }) => {
+  const { app } = useAppContext();
   if (bookmarks.length === 0)
     return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmarks-grid", children: bookmarks.map((b, i) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "bookmarks-grid", children: bookmarks.map((b, i) => {
     var _a;
-    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
       "div",
       {
         className: "bookmark-card",
@@ -25381,16 +25408,15 @@ var BookmarksGrid = ({
           }
         },
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "bookmark-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "bookmark-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
             IconDisplay,
             {
-              app,
               iconName: b.icon,
               color: b.color,
               className: "bookmark-icon-el"
             }
           ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "bookmark-title", children: b.title || (b.path ? (_a = b.path.split("/").pop()) == null ? void 0 : _a.replace(/\.[^/.]+$/, "") : "Untitled") })
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "bookmark-title", children: b.title || (b.path ? (_a = b.path.split("/").pop()) == null ? void 0 : _a.replace(/\.[^/.]+$/, "") : "Untitled") })
         ]
       },
       i
@@ -25399,15 +25425,15 @@ var BookmarksGrid = ({
 };
 
 // components/RecentFilesGrid.tsx
-var React4 = __toESM(require_react());
-var import_jsx_runtime7 = __toESM(require_jsx_runtime());
+var React5 = __toESM(require_react());
+var import_jsx_runtime8 = __toESM(require_jsx_runtime());
 var RecentFilesGrid = ({
-  app,
   recentFiles,
   onSelect
 }) => {
-  const [enrichedFiles, setEnrichedFiles] = React4.useState([]);
-  React4.useEffect(() => {
+  const { app } = useAppContext();
+  const [enrichedFiles, setEnrichedFiles] = React5.useState([]);
+  React5.useEffect(() => {
     const enrichFiles = async () => {
       const enriched = await Promise.all(
         recentFiles.map(async (file) => {
@@ -25425,24 +25451,23 @@ var RecentFilesGrid = ({
   }, [app, recentFiles]);
   if (enrichedFiles.length === 0)
     return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_jsx_runtime7.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h3", { className: "section-title", children: "Recent Files" }),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "bookmarks-grid", children: enrichedFiles.map((item) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("h3", { className: "section-title", children: "Recent Files" }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "bookmarks-grid", children: enrichedFiles.map((item) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
       "div",
       {
         className: "bookmark-card",
         onClick: () => onSelect(item.file),
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "bookmark-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "bookmark-icon-container", children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
             IconDisplay,
             {
-              app,
               iconName: item.icon,
               color: item.color,
               className: "bookmark-icon-el"
             }
           ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "bookmark-title", children: item.file.basename })
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "bookmark-title", children: item.file.basename })
         ]
       },
       item.file.path
@@ -25451,10 +25476,10 @@ var RecentFilesGrid = ({
 };
 
 // NewTabComponent.tsx
-var import_jsx_runtime8 = __toESM(require_jsx_runtime());
+var import_jsx_runtime9 = __toESM(require_jsx_runtime());
 function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = React5.useState(value);
-  React5.useEffect(() => {
+  const [debouncedValue, setDebouncedValue] = React6.useState(value);
+  React6.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
@@ -25465,13 +25490,13 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 var NewTabComponent = ({ app, leaf, settings }) => {
-  const [query, setQuery] = React5.useState("");
+  const [query, setQuery] = React6.useState("");
   const debouncedQuery = useDebounce(query, 200);
-  const [results, setResults] = React5.useState([]);
-  const [selectedIndex, setSelectedIndex] = React5.useState(0);
-  const [bookmarks, setBookmarks] = React5.useState([]);
-  const [recentFiles, setRecentFiles] = React5.useState([]);
-  React5.useEffect(() => {
+  const [results, setResults] = React6.useState([]);
+  const [selectedIndex, setSelectedIndex] = React6.useState(0);
+  const [bookmarks, setBookmarks] = React6.useState([]);
+  const [recentFiles, setRecentFiles] = React6.useState([]);
+  React6.useEffect(() => {
     if (!settings.showRecentFiles) {
       setRecentFiles([]);
       return;
@@ -25480,7 +25505,7 @@ var NewTabComponent = ({ app, leaf, settings }) => {
     const files = lastFiles.map((path) => app.vault.getAbstractFileByPath(path)).filter((file) => file instanceof import_obsidian4.TFile).slice(0, 4);
     setRecentFiles(files);
   }, [app, settings.showRecentFiles]);
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (!settings.showBookmarks) {
       setBookmarks([]);
       return;
@@ -25527,7 +25552,7 @@ var NewTabComponent = ({ app, leaf, settings }) => {
     };
     fetchBookmarks();
   }, [app, settings.showBookmarks]);
-  React5.useEffect(() => {
+  React6.useEffect(() => {
     if (!debouncedQuery) {
       setResults([]);
       return;
@@ -25579,45 +25604,41 @@ var NewTabComponent = ({ app, leaf, settings }) => {
       }
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "new-tab-wrapper", children: [
-    app.isMobile && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "mobile-ui-spacer" }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(GreetingSection, { customGreeting: settings.customGreeting }),
-    !query && settings.showDailyNote && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DailyNoteWidget, { app, leaf }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "search-group", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(AppProvider, { app, settings, leaf, children: /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "new-tab-wrapper", children: [
+    app.isMobile && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "mobile-ui-spacer" }),
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(GreetingSection, { customGreeting: settings.customGreeting }),
+    !query && settings.showDailyNote && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(DailyNoteWidget, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "search-group", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
         SearchBar,
         {
-          app,
           query,
           setQuery,
           onKeyDown: handleKeyDown,
           resultsCount: results.length
         }
       ),
-      results.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      results.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
         SearchResults,
         {
-          app,
           results,
           selectedIndex,
           onSelect: openFile,
           setSelectedIndex
         }
-      ) : !query && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "bookmarks-section", children: [
-        settings.showRecentFiles && recentFiles.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ) : !query && /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "bookmarks-section", children: [
+        settings.showRecentFiles && recentFiles.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
           RecentFilesGrid,
           {
-            app,
             recentFiles,
             onSelect: openFile
           }
         ),
-        settings.showBookmarks && bookmarks.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("h3", { className: "section-title", children: "Bookmarks" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        settings.showBookmarks && bookmarks.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("h3", { className: "section-title", children: "Bookmarks" }),
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
             BookmarksGrid,
             {
-              app,
               bookmarks,
               onSelect: openFile
             }
@@ -25625,11 +25646,11 @@ var NewTabComponent = ({ app, leaf, settings }) => {
         ] })
       ] })
     ] })
-  ] });
+  ] }) });
 };
 
 // view.tsx
-var import_jsx_runtime9 = __toESM(require_jsx_runtime());
+var import_jsx_runtime10 = __toESM(require_jsx_runtime());
 var NEW_TAB_VIEW_TYPE = "new-tab-search-view";
 var NewTabView = class extends import_obsidian5.ItemView {
   constructor(leaf, plugin) {
@@ -25653,13 +25674,13 @@ var NewTabView = class extends import_obsidian5.ItemView {
     container.addClass("new-tab-page-view");
     this.root = ReactDOM.createRoot(container);
     this.root.render(
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(React6.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(React7.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
     );
   }
   refresh() {
     if (this.root) {
       this.root.render(
-        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(React6.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(React7.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(NewTabComponent, { app: this.app, leaf: this.leaf, settings: this.plugin.settings }) })
       );
     }
   }

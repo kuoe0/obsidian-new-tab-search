@@ -1,10 +1,10 @@
 import * as React from "react";
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { SearchResult } from "../types";
 import { IconDisplay } from "./IconDisplay";
+import { useAppContext } from "../context";
 
 interface SearchResultsProps {
-  app: App;
   results: SearchResult[];
   selectedIndex: number;
   onSelect: (file: TFile) => void;
@@ -12,12 +12,12 @@ interface SearchResultsProps {
 }
 
 export const SearchResults: React.FC<SearchResultsProps> = ({
-  app,
   results,
   selectedIndex,
   onSelect,
   setSelectedIndex,
 }) => {
+  const { app } = useAppContext();
   if (results.length === 0) return null;
 
   return (
@@ -30,7 +30,6 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           onMouseEnter={() => setSelectedIndex(index)}
         >
           <IconDisplay
-            app={app}
             iconName={result.icon}
             color={result.color}
             className="result-icon-el"

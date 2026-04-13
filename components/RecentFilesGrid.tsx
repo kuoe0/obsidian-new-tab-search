@@ -1,8 +1,8 @@
 import * as React from "react";
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { IconDisplay } from "./IconDisplay";
 import { getIconForFile } from "../iconUtils";
-import { IconInfo } from "../types";
+import { useAppContext } from "../context";
 
 interface RecentFileItem {
   file: TFile;
@@ -11,16 +11,15 @@ interface RecentFileItem {
 }
 
 interface RecentFilesGridProps {
-  app: App;
   recentFiles: TFile[];
   onSelect: (file: TFile) => void;
 }
 
 export const RecentFilesGrid: React.FC<RecentFilesGridProps> = ({
-  app,
   recentFiles,
   onSelect,
 }) => {
+  const { app } = useAppContext();
   const [enrichedFiles, setEnrichedFiles] = React.useState<RecentFileItem[]>([]);
 
   React.useEffect(() => {
@@ -54,7 +53,6 @@ export const RecentFilesGrid: React.FC<RecentFilesGridProps> = ({
           >
             <div className="bookmark-icon-container">
               <IconDisplay
-                app={app}
                 iconName={item.icon}
                 color={item.color}
                 className="bookmark-icon-el"

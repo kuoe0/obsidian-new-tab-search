@@ -11,6 +11,7 @@ import { SearchBar } from "./components/SearchBar";
 import { SearchResults } from "./components/SearchResults";
 import { BookmarksGrid } from "./components/BookmarksGrid";
 import { RecentFilesGrid } from "./components/RecentFilesGrid";
+import { AppProvider } from "./context";
 
 interface NewTabComponentProps {
   app: App;
@@ -174,57 +175,55 @@ export const NewTabComponent: React.FC<NewTabComponentProps> = ({ app, leaf, set
   };
 
   return (
-    <div className="new-tab-wrapper">
-      {(app as any).isMobile && <div className="mobile-ui-spacer" />}
-      
-      <GreetingSection customGreeting={settings.customGreeting} />
+    <AppProvider app={app} settings={settings} leaf={leaf}>
+      <div className="new-tab-wrapper">
+        {(app as any).isMobile && <div className="mobile-ui-spacer" />}
+        
+        <GreetingSection customGreeting={settings.customGreeting} />
 
-      {!query && settings.showDailyNote && (
-        <DailyNoteWidget app={app} leaf={leaf} />
-      )}
+        {!query && settings.showDailyNote && (
+          <DailyNoteWidget />
+        )}
 
-      <div className="search-group">
-        <SearchBar
-          app={app}
-          query={query}
-          setQuery={setQuery}
-          onKeyDown={handleKeyDown}
-          resultsCount={results.length}
-        />
-
-        {results.length > 0 ? (
-          <SearchResults
-            app={app}
-            results={results}
-            selectedIndex={selectedIndex}
-            onSelect={openFile}
-            setSelectedIndex={setSelectedIndex}
+        <div className="search-group">
+          <SearchBar
+            query={query}
+            setQuery={setQuery}
+            onKeyDown={handleKeyDown}
+            resultsCount={results.length}
           />
-        ) : (
-          !query && (
-            <div className="bookmarks-section">
-              {settings.showRecentFiles && recentFiles.length > 0 && (
-                <RecentFilesGrid
-                  app={app}
-                  recentFiles={recentFiles}
-                  onSelect={openFile}
-                />
-              )}
-              
-              {settings.showBookmarks && bookmarks.length > 0 && (
-                <>
-                  <h3 className="section-title">Bookmarks</h3>
-                  <BookmarksGrid
-                    app={app}
-                    bookmarks={bookmarks}
+
+          {results.length > 0 ? (
+            <SearchResults
+              results={results}
+              selectedIndex={selectedIndex}
+              onSelect={openFile}
+              setSelectedIndex={setSelectedIndex}
+            />
+          ) : (
+            !query && (
+              <div className="bookmarks-section">
+                {settings.showRecentFiles && recentFiles.length > 0 && (
+                  <RecentFilesGrid
+                    recentFiles={recentFiles}
                     onSelect={openFile}
                   />
-                </>
-              )}
-            </div>
-          )
-        )}
+                )}
+                
+                {settings.showBookmarks && bookmarks.length > 0 && (
+                  <>
+                    <h3 className="section-title">Bookmarks</h3>
+                    <BookmarksGrid
+                      bookmarks={bookmarks}
+                      onSelect={openFile}
+                    />
+                  </>
+                )}
+              </div>
+            )
+          )}
+        </div>
       </div>
-    </div>
+    </AppProvider>
   );
 };

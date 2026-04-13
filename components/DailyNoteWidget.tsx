@@ -1,7 +1,8 @@
 import * as React from "react";
-import { App, TFile, WorkspaceLeaf, normalizePath } from "obsidian";
+import { TFile, normalizePath } from "obsidian";
 import { IconDisplay } from "./IconDisplay";
 import { AppWithInternalPlugins } from "../types";
+import { useAppContext } from "../context";
 
 declare global {
   interface Window {
@@ -9,12 +10,10 @@ declare global {
   }
 }
 
-interface DailyNoteWidgetProps {
-  app: App;
-  leaf: WorkspaceLeaf;
-}
+interface DailyNoteWidgetProps {}
 
-export const DailyNoteWidget: React.FC<DailyNoteWidgetProps> = ({ app, leaf }) => {
+export const DailyNoteWidget: React.FC<DailyNoteWidgetProps> = () => {
+  const { app, leaf } = useAppContext();
   const handleDailyNote = async () => {
     try {
       let format = "YYYY-MM-DD";
@@ -82,7 +81,7 @@ export const DailyNoteWidget: React.FC<DailyNoteWidgetProps> = ({ app, leaf }) =
     <div className="daily-note-section">
       <button className="daily-note-widget" onClick={handleDailyNote}>
         <div className="daily-note-icon-container">
-          <IconDisplay app={app} iconName="calendar" className="daily-note-icon" />
+          <IconDisplay iconName="calendar" className="daily-note-icon" />
         </div>
         <div className="daily-note-content">
           <span className="daily-note-label">Today's Note</span>

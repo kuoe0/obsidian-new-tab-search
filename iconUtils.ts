@@ -2,11 +2,15 @@ import { App, TFile, setIcon } from "obsidian";
 import { IconInfo } from "./types";
 
 const iconCache = new Map<string, IconInfo>();
+const MAX_CACHE_SIZE = 500;
 
 export async function getIconForFile(app: App, file: TFile): Promise<IconInfo> {
     const cacheKey = file.path + (file as any).mtime; // Use path and modification time as key
     if (iconCache.has(cacheKey)) {
-        return iconCache.get(cacheKey)!;
+        const info = iconCache.get(cacheKey)!;
+        iconCache.delete(cacheKey);
+        iconCache.set(cacheKey, info);
+        return info;
     }
 
     let result: IconInfo = { icon: "lucide-file", color: null };
@@ -53,6 +57,12 @@ export async function getIconForFile(app: App, file: TFile): Promise<IconInfo> {
         if (file.extension === "pdf") result.icon = "lucide-file-text";
         else if (file.extension === "png" || file.extension === "jpg") result.icon = "lucide-image";
         else if (file.extension === "canvas") result.icon = "lucide-layout-dashboard";
+    }
+
+    // LRU Eviction
+    if (iconCache.size >= MAX_CACHE_SIZE) {
+        const firstKey = iconCache.keys().next().value;
+        if (firstKey) iconCache.delete(firstKey);
     }
 
     iconCache.set(cacheKey, result);

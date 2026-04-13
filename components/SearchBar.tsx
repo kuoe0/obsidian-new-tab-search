@@ -1,9 +1,8 @@
 import * as React from "react";
-import { App } from "obsidian";
 import { IconDisplay } from "./IconDisplay";
+import { useAppContext } from "../context";
 
 interface SearchBarProps {
-  app: App;
   query: string;
   setQuery: (query: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
@@ -11,12 +10,12 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  app,
   query,
   setQuery,
   onKeyDown,
   resultsCount,
 }) => {
+  const { app } = useAppContext();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -52,14 +51,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               }}
               aria-label="Clear search"
             >
-              <IconDisplay app={app} iconName="x" />
+              <IconDisplay iconName="x" />
             </button>
           )}
           <div className="search-icon-indicator">
             {query ? (
-              <IconDisplay app={app} iconName="corner-down-left" />
+              <IconDisplay iconName="corner-down-left" />
             ) : (
-              <IconDisplay app={app} iconName="search" />
+              <IconDisplay iconName="search" />
             )}
           </div>
         </div>
