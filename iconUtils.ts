@@ -29,13 +29,13 @@ export async function getIconForFile(app: App, file: TFile): Promise<IconInfo> {
             // Rule takes precedence if it exists
             if (rule) {
                 result = {
-                    icon: rule.icon || fileItem?.icon || "lucide-file",
+                    icon: rule.iconId || rule.icon || fileItem?.icon || fileItem?.iconId || "lucide-file",
                     color: rule.color || fileItem?.color || null
                 };
             } else if (fileItem) {
                 // Then checks manual overrides on the file itself
                 result = {
-                    icon: fileItem.icon || "lucide-file",
+                    icon: fileItem.icon || fileItem.iconId || "lucide-file",
                     color: fileItem.color || null
                 };
             }
